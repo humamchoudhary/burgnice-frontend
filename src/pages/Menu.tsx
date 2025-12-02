@@ -38,7 +38,14 @@ export const Menu = ({ onAddToCart }: MenuProps) => {
           slug: cat.name.toLowerCase().replace(/\s+/g, ""),
         }));
 
-        const convertedItems = menuData.map(convertMenuItem);
+        const convertedItems = menuData.map((item) => ({
+          id: item._id,
+          name: item.name,
+          description: item.description,
+          price: item.price,
+          image: item.image || '/placeholder-image.jpg',
+          category: typeof item.category === 'string' ? item.category : item.category.name,
+        }));
 
         setCategories(mappedCategories);
         setMenuItems(convertedItems);
@@ -72,7 +79,6 @@ export const Menu = ({ onAddToCart }: MenuProps) => {
   };
 
   const handleItemClick = (item: MenuItemType) => {
-    // Only open modal on card click
     setSelectedItem(item);
   };
 
@@ -83,14 +89,13 @@ export const Menu = ({ onAddToCart }: MenuProps) => {
     : [];
     const existing = cartItems.find((i) => i.id === item.id);
     if (existing) {
-      existing.quantity += quantity; // increment quantity
+      existing.quantity += quantity;
     } else {
-      cartItems.push({ ...item, quantity }); // add new item with quantity
+      cartItems.push({ ...item, quantity });
     }
     sessionStorage.setItem("cart", JSON.stringify(cartItems));
     window.dispatchEvent(new Event("cart-updated"));
   
-    // Notify parent to update badge immediately
     onAddToCart(item);
   };
 

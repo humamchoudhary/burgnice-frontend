@@ -1,28 +1,66 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import type { CartItem } from "@/components/Cart";
+import { Label } from "@/components/ui/label";
+import { useAuth } from "@/contexts/authContext";
+import { Loader2 } from "lucide-react";
+import { toast } from "sonner";
+import { orderAPI } from "@/services/api";
+
+type CartItem = {
+  id: string;
+  name: string;
+  price: number;
+  quantity: number;
+  image: string;
+};
 
 export const Checkout = () => {
   const navigate = useNavigate();
+  const { user, isAuthenticated } = useAuth();
   const [items, setItems] = useState<CartItem[]>([]);
   const [form, setForm] = useState({
     customerName: "",
     contactPhone: "",
     deliveryAddress: "",
+    paymentMethod: "COD",
+    notes: "",
   });
+  const [loading, setLoading] = useState(false);
 
-  // Load cart items from localStorage
+  // Load cart items from sessionStorage
   useEffect(() => {
     const stored = sessionStorage.getItem("cart");
-    if (stored) setItems(JSON.parse(stored));
-  }, []);
+    if (stored) {
+      const cartItems = JSON.parse(stored);
+      // Aggregate quantities
+      const aggregated: Record<string, CartItem> = {};
+      cartItems.forEach((item: any) => {
+        if (!item) return;
+        if (aggregated[item.id]) {
+          aggregated[item.id].quantity += 1;
+        } else {
+          aggregated[item.id] = { ...item, quantity: 1 };
+        }
+      });
+      setItems(Object.values(aggregated));
+    }
+
+    // Pre-fill form with user data if logged in
+    if (user) {
+      setForm(prev => ({
+        ...prev,
+        customerName: user.username,
+        // You can add more user data here if available
+      }));
+    }
+  }, [user]);
 
   const total = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  const pointsEarned = Math.floor(total / 10);
 
   const updateField = (field: keyof typeof form, value: string) => {
     setForm((prev) => ({ ...prev, [field]: value }));
@@ -30,95 +68,237 @@ export const Checkout = () => {
 
   const placeOrder = async () => {
     if (!form.customerName || !form.contactPhone || !form.deliveryAddress) {
-      alert("Please fill all required fields.");
+      toast.error("Please fill all required fields.");
       return;
     }
 
     if (items.length === 0) {
-      alert("Your cart is empty.");
+      toast.error("Your cart is empty.");
       return;
     }
 
+    // Format items for backend
+    const orderItems = items.map(item => ({
+      menuItem: item.id,
+      quantity: item.quantity,
+      price: item.price
+    }));
+
     const payload = {
-      orderItems: items.map((item) => ({ menuItem: item.id, quantity: item.quantity })),
-      total,
+      orderItems: orderItems,
+      total: total,
       deliveryAddress: form.deliveryAddress,
+      paymentMethod: form.paymentMethod,
+      notes: form.notes,
       contactPhone: form.contactPhone,
-      user: form.customerName,
-      paymentMethod: "COD",
+      customerName: form.customerName,
+      status: 'pending' as const
     };
 
+    setLoading(true);
     try {
-      await axios.post("http://localhost:5000/api/orders", payload);
+      // Use the new orderAPI.create method
+      const response = await orderAPI.create(payload);
 
-      alert("Order placed successfully!");
+      toast.success("Order placed successfully!");
+      
+      // Show loyalty points earned if user is logged in
+      if (isAuthenticated && response.loyaltyPointsEarned) {
+        toast.success(`You earned ${response.loyaltyPointsEarned} loyalty points!`);
+      }
 
       // Clear cart
       sessionStorage.removeItem("cart");
+      window.dispatchEvent(new Event("cart-updated"));
 
-      navigate("/", { replace: true });
-    } catch (error) {
+      // Redirect to home
+      setTimeout(() => {
+        navigate("/", { replace: true });
+      }, 1500);
+
+    } catch (error: any) {
       console.error("Order creation failed:", error);
-      alert("Failed to place order.");
+      toast.error(error.response?.data?.message || "Failed to place order.");
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div className="max-w-xl mx-auto p-6 space-y-8">
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-xl font-bold">Checkout</CardTitle>
-        </CardHeader>
+    <div className="container mx-auto px-4 py-12">
+      <div className="max-w-4xl mx-auto">
+        <h1 className="text-4xl font-bold mb-8 text-center">Checkout</h1>
+        
+        <div className="grid lg:grid-cols-2 gap-8">
+          {/* Left Column: Delivery Info */}
+          <div className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Delivery Information</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="customerName">Full Name *</Label>
+                  <Input
+                    id="customerName"
+                    placeholder="Enter your name"
+                    value={form.customerName}
+                    onChange={(e) => updateField("customerName", e.target.value)}
+                  />
+                </div>
 
-        <CardContent className="space-y-4">
-          <div>
-            <label className="font-medium">Full Name</label>
-            <Input
-              placeholder="Enter your name"
-              value={form.customerName}
-              onChange={(e) => updateField("customerName", e.target.value)}
-            />
+                <div className="space-y-2">
+                  <Label htmlFor="contactPhone">Phone Number *</Label>
+                  <Input
+                    id="contactPhone"
+                    placeholder="03XX-XXXXXXX"
+                    value={form.contactPhone}
+                    onChange={(e) => updateField("contactPhone", e.target.value)}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="deliveryAddress">Delivery Address *</Label>
+                  <Input
+                    id="deliveryAddress"
+                    placeholder="Street, City, House #"
+                    value={form.deliveryAddress}
+                    onChange={(e) => updateField("deliveryAddress", e.target.value)}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="notes">Order Notes (Optional)</Label>
+                  <Input
+                    id="notes"
+                    placeholder="Any special instructions?"
+                    value={form.notes}
+                    onChange={(e) => updateField("notes", e.target.value)}
+                  />
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Payment Method</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2">
+                  <div className="flex items-center space-x-2">
+                    <input
+                      type="radio"
+                      id="cod"
+                      name="payment"
+                      value="COD"
+                      checked={form.paymentMethod === "COD"}
+                      onChange={(e) => updateField("paymentMethod", e.target.value)}
+                      className="h-4 w-4 text-primary"
+                    />
+                    <Label htmlFor="cod" className="cursor-pointer">
+                      Cash on Delivery
+                    </Label>
+                  </div>
+                  <p className="text-sm text-muted-foreground pl-6">
+                    Pay when you receive your order
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
           </div>
 
-          <div>
-            <label className="font-medium">Phone</label>
-            <Input
-              placeholder="03XX-XXXXXXX"
-              value={form.contactPhone}
-              onChange={(e) => updateField("contactPhone", e.target.value)}
-            />
+          {/* Right Column: Order Summary */}
+          <div className="space-y-6">
+            <Card className="sticky top-24">
+              <CardHeader>
+                <CardTitle>Order Summary</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {/* Order Items */}
+                  <div className="space-y-3 max-h-64 overflow-y-auto pr-2">
+                    {items.map((item) => (
+                      <div key={item.id} className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <img
+                            src={item.image}
+                            alt={item.name}
+                            className="w-12 h-12 object-cover rounded-lg"
+                          />
+                          <div>
+                            <p className="font-medium">{item.name}</p>
+                            <p className="text-sm text-muted-foreground">
+                              £{item.price.toFixed(2)} × {item.quantity}
+                            </p>
+                          </div>
+                        </div>
+                        <p className="font-semibold">
+                          £{(item.price * item.quantity).toFixed(2)}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+
+                  <Separator />
+
+                  {/* Loyalty Points */}
+                  {isAuthenticated && (
+                    <div className="p-3 bg-primary/5 rounded-lg border border-primary/20">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-sm font-medium">Loyalty Points Earned</span>
+                        <span className="text-lg font-bold text-primary">
+                          +{pointsEarned}
+                        </span>
+                      </div>
+                      <p className="text-xs text-muted-foreground">
+                        You'll earn 1 point for every £10 spent
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Order Total */}
+                  <div className="space-y-2">
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Subtotal</span>
+                      <span>£{total.toFixed(2)}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Delivery</span>
+                      <span className="text-green-600">Free</span>
+                    </div>
+                    <Separator />
+                    <div className="flex justify-between text-lg font-bold">
+                      <span>Total</span>
+                      <span className="text-primary">£{total.toFixed(2)}</span>
+                    </div>
+                  </div>
+
+                  {/* Place Order Button */}
+                  <Button
+                    className="w-full h-14 text-lg shadow-lg hover:shadow-xl transition-all duration-300 mt-4"
+                    onClick={placeOrder}
+                    disabled={loading}
+                  >
+                    {loading ? (
+                      <>
+                        <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                        Processing Order...
+                      </>
+                    ) : (
+                      `Place Order - £${total.toFixed(2)}`
+                    )}
+                  </Button>
+
+                  {/* Security Notice */}
+                  <p className="text-xs text-center text-muted-foreground mt-4">
+                    🔒 Your payment information is secure
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
           </div>
-
-          <div>
-            <label className="font-medium">Delivery Address</label>
-            <Input
-              placeholder="Street, City, House #"
-              value={form.deliveryAddress}
-              onChange={(e) => updateField("deliveryAddress", e.target.value)}
-            />
-          </div>
-
-          <Separator />
-
-          <h3 className="font-semibold text-lg mb-2">Order Summary</h3>
-          {items.map((item) => (
-            <div key={item.id} className="flex justify-between text-sm mb-2">
-              <span>{item.name} × {item.quantity}</span>
-              <span>£{(item.price * item.quantity).toFixed(2)}</span>
-            </div>
-          ))}
-
-          <Separator />
-          <div className="flex justify-between text-lg font-bold">
-            <span>Total</span>
-            <span>£{total.toFixed(2)}</span>
-          </div>
-
-          <Button className="w-full h-12 text-lg mt-4" onClick={placeOrder}>
-            Place Order (Cash on Delivery)
-          </Button>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </div>
   );
 };

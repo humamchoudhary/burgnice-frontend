@@ -4,11 +4,17 @@ import { ShoppingCart, Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Badge } from "@/components/ui/badge";
+import { useAuth } from "@/contexts/authContext";
+import { LoyaltyPoints } from "@/components/LoyaltyPoints";
+import { UserMenu } from "@/components/UserMenu";
+import { AuthModal } from "@/components/AuthModal";
 
 export const Header = ({ onCartClick }: { onCartClick: () => void }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [cartItemCount, setCartItemCount] = useState(0);
+  const [showAuthModal, setShowAuthModal] = useState(false);
   const location = useLocation();
+  const { isAuthenticated } = useAuth();
 
   const navItems = [
     { name: "Home", path: "/" },
@@ -27,7 +33,7 @@ export const Header = ({ onCartClick }: { onCartClick: () => void }) => {
     }
     const items = JSON.parse(cart);
     const total = items.reduce((sum: number, item: any) => {
-      if (!item) return sum; // skip null
+      if (!item) return sum;
       return sum + (item.quantity ?? 1);
     }, 0);
     setCartItemCount(total);
@@ -45,7 +51,7 @@ export const Header = ({ onCartClick }: { onCartClick: () => void }) => {
   }, []);
 
   return (
-    <header className="sticky top-0 z-50 w-full bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80 border-b shadow-sm">
+    <header className="sticky top-0 z-50 w-full bg-background/95 backdrop-blur-lg supports-[backdrop-filter]:bg-background/90 border-b shadow-sm">
       <div className="container mx-auto px-4 h-20 flex items-center justify-between">
         {/* Logo */}
         <Link to="/" className="flex items-center space-x-2 group">
@@ -60,7 +66,7 @@ export const Header = ({ onCartClick }: { onCartClick: () => void }) => {
             <Link key={item.path} to={item.path}>
               <Button
                 variant={isActive(item.path) ? "default" : "ghost"}
-                className="transition-all duration-300"
+                className="transition-all duration-300 hover:scale-105"
               >
                 {item.name}
               </Button>
@@ -68,24 +74,42 @@ export const Header = ({ onCartClick }: { onCartClick: () => void }) => {
           ))}
         </nav>
 
-        {/* Cart Icon */}
-        <div className="flex items-center space-x-4">
+        {/* Right Section */}
+        <div className="flex items-center gap-3">
+          {/* Loyalty Points */}
+          <LoyaltyPoints />
+          
+          {/* Cart Icon */}
           <Button
             variant="outline"
             size="icon"
-            className="relative transition-all duration-300 hover:scale-110 hover:shadow-md"
+            className="relative transition-all duration-300 hover:scale-110 hover:shadow-md group"
             onClick={onCartClick}
           >
-            <ShoppingCart className="h-5 w-5" />
+            <ShoppingCart className="h-5 w-5 transition-transform group-hover:rotate-12" />
             {cartItemCount > 0 && (
               <Badge
                 variant="destructive"
-                className="absolute -top-2 -right-2 h-6 w-6 flex items-center justify-center p-0 text-xs"
+                className="absolute -top-2 -right-2 h-6 w-6 flex items-center justify-center p-0 text-xs animate-bounce"
               >
                 {cartItemCount}
               </Badge>
             )}
           </Button>
+
+          {/* Auth Buttons / User Menu */}
+          {isAuthenticated ? (
+            <UserMenu />
+          ) : (
+            <Button
+              variant="default"
+              size="sm"
+              className="hidden md:inline-flex h-10 px-4 rounded-full shadow-md hover:shadow-lg transition-all duration-300 hover:scale-105"
+              onClick={() => setShowAuthModal(true)}
+            >
+              Sign In
+            </Button>
+          )}
 
           {/* Mobile Menu */}
           <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
@@ -94,27 +118,79 @@ export const Header = ({ onCartClick }: { onCartClick: () => void }) => {
                 {mobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
               </Button>
             </SheetTrigger>
-            <SheetContent side="right" className="w-64">
-              <nav className="flex flex-col space-y-4 mt-8">
-                {navItems.map((item) => (
-                  <Link
-                    key={item.path}
-                    to={item.path}
+            <SheetContent side="right" className="w-80 sm:w-96 p-0">
+              <div className="p-6">
+                <div className="flex items-center justify-between mb-8">
+                  <div className="text-xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
+                    Burg N Ice
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="icon"
                     onClick={() => setMobileMenuOpen(false)}
                   >
-                    <Button
-                      variant={isActive(item.path) ? "default" : "ghost"}
-                      className="w-full justify-start text-lg"
+                    <X className="h-5 w-5" />
+                  </Button>
+                </div>
+
+                {/* Mobile Navigation */}
+                <nav className="space-y-2 mb-8">
+                  {navItems.map((item) => (
+                    <Link
+                      key={item.path}
+                      to={item.path}
+                      onClick={() => setMobileMenuOpen(false)}
                     >
-                      {item.name}
+                      <Button
+                        variant={isActive(item.path) ? "default" : "ghost"}
+                        className="w-full justify-start text-lg h-12"
+                      >
+                        {item.name}
+                      </Button>
+                    </Link>
+                  ))}
+                </nav>
+
+                {/* Mobile Auth Section */}
+                <div className="space-y-3 pt-4 border-t">
+                  {isAuthenticated ? (
+                    <div className="space-y-2">
+                      <p className="text-sm text-muted-foreground">Signed in as</p>
+                      <p className="font-semibold">{}</p>
+                      <Button
+                        variant="outline"
+                        className="w-full"
+                        onClick={() => {
+                          // Handle logout
+                          setMobileMenuOpen(false);
+                        }}
+                      >
+                        Sign Out
+                      </Button>
+                    </div>
+                  ) : (
+                    <Button
+                      className="w-full h-12"
+                      onClick={() => {
+                        setShowAuthModal(true);
+                        setMobileMenuOpen(false);
+                      }}
+                    >
+                      Sign In
                     </Button>
-                  </Link>
-                ))}
-              </nav>
+                  )}
+                </div>
+              </div>
             </SheetContent>
           </Sheet>
         </div>
       </div>
+
+      {/* Auth Modal */}
+      <AuthModal 
+        isOpen={showAuthModal} 
+        onClose={() => setShowAuthModal(false)} 
+      />
     </header>
   );
 };

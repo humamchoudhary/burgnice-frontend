@@ -7,7 +7,7 @@ import { PromoBanner } from "@/components/PromoBanner";
 import { ServiceIcons } from "@/components/ServiceIcons";
 import { FeaturedItems } from "@/components/FeaturedItems";
 import { Link } from "react-router-dom";
-import { MenuItemType, convertMenuItem } from "@/components/MenuItem";
+import { MenuItemType } from "@/components/MenuItem";
 import { categoryAPI, menuItemAPI } from "@/services/api";
 import { Loader2 } from "lucide-react";
 import heroImage from "@/assets/hero-burger.jpg";
@@ -53,7 +53,7 @@ export const Home = ({ onAddToCart }: HomeProps) => {
         // Map categories with fallback images
         const mappedCategories = categoriesData.map(cat => {
           const slug = cat.name.toLowerCase().replace(/\s+/g, '');
-          const image = categoryImages[slug] || burgersImage; // Default to burgers image
+          const image = categoryImages[slug] || burgersImage;
           
           return {
             title: cat.name,
@@ -62,8 +62,15 @@ export const Home = ({ onAddToCart }: HomeProps) => {
           };
         });
 
-        // Get first 4 items as featured
-        const convertedItems = menuData.slice(0, 4).map(convertMenuItem);
+        // Convert menu items to MenuItemType
+        const convertedItems = menuData.slice(0, 4).map(item => ({
+          id: item._id,
+          name: item.name,
+          description: item.description,
+          price: item.price,
+          image: item.image || '/placeholder-image.jpg',
+          category: typeof item.category === 'string' ? item.category : item.category.name,
+        }));
 
         setCategories(mappedCategories);
         setFeaturedItems(convertedItems);
