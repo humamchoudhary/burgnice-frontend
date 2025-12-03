@@ -16,16 +16,20 @@ export const LoyaltyPoints: React.FC = () => {
 
   const fetchLoyaltyPoints = async () => {
     if (!isAuthenticated) return;
-    
+
     setLoading(true);
     try {
-      const token = localStorage.getItem('token');
-      const response = await axios.get('http://localhost:5000/api/orders/loyalty-summary', {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const token = localStorage.getItem("token");
+      const response = await axios.get(
+        "http://localhost:5000/api/orders/loyalty-summary",
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        },
+      );
+      console.log(response);
       setPoints(response.data.loyaltyPoints || 0);
     } catch (error) {
-      console.error('Error fetching loyalty points:', error);
+      console.error("Error fetching loyalty points:", error);
     } finally {
       setLoading(false);
     }
@@ -63,7 +67,7 @@ export const LoyaltyPoints: React.FC = () => {
         >
           {/* Animated background effect */}
           <div className="absolute inset-0 bg-gradient-to-r from-primary/0 via-primary/5 to-primary/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
-          
+
           <div className="flex items-center gap-2 relative z-10">
             <div className="relative">
               <Award className="h-5 w-5 text-primary" />
@@ -71,7 +75,7 @@ export const LoyaltyPoints: React.FC = () => {
                 <Sparkles className="absolute -top-1 -right-1 h-3 w-3 text-primary animate-pulse" />
               )}
             </div>
-            
+
             <div className="flex flex-col items-start">
               {loading ? (
                 <Skeleton className="h-4 w-16" />
@@ -84,9 +88,11 @@ export const LoyaltyPoints: React.FC = () => {
                 {isAuthenticated ? rewardTier.name : "Login to earn"}
               </span>
             </div>
-            
+
             {isAuthenticated && (
-              <ChevronDown className={`h-4 w-4 transition-transform duration-300 ${showDetails ? "rotate-180" : ""}`} />
+              <ChevronDown
+                className={`h-4 w-4 transition-transform duration-300 ${showDetails ? "rotate-180" : ""}`}
+              />
             )}
           </div>
         </Button>
@@ -100,7 +106,9 @@ export const LoyaltyPoints: React.FC = () => {
                 <div className="flex items-center justify-between">
                   <div>
                     <h3 className="font-bold text-lg">Loyalty Rewards</h3>
-                    <p className="text-sm text-muted-foreground">Your current status</p>
+                    <p className="text-sm text-muted-foreground">
+                      Your current status
+                    </p>
                   </div>
                   <div className={`text-2xl font-bold ${rewardTier.color}`}>
                     {points}
@@ -114,9 +122,9 @@ export const LoyaltyPoints: React.FC = () => {
                     <span>{points % 100}/100</span>
                   </div>
                   <div className="h-2 bg-secondary rounded-full overflow-hidden">
-                    <div 
+                    <div
                       className="h-full bg-gradient-to-r from-primary to-primary/70 rounded-full transition-all duration-500"
-                      style={{ width: `${(points % 100)}%` }}
+                      style={{ width: `${points % 100}%` }}
                     />
                   </div>
                 </div>
@@ -124,18 +132,26 @@ export const LoyaltyPoints: React.FC = () => {
                 {/* Points Info */}
                 <div className="grid grid-cols-2 gap-3 pt-2">
                   <div className="space-y-1">
-                    <p className="text-xs text-muted-foreground">Points Value</p>
-                    <p className="font-semibold">£{(points * 0.1).toFixed(2)}</p>
+                    <p className="text-xs text-muted-foreground">
+                      Points Value
+                    </p>
+                    <p className="font-semibold">
+                      £{(points * 0.1).toFixed(2)}
+                    </p>
                   </div>
                   <div className="space-y-1">
                     <p className="text-xs text-muted-foreground">Next Reward</p>
-                    <p className="font-semibold">{100 - (points % 100)} points</p>
+                    <p className="font-semibold">
+                      {100 - (points % 100)} points
+                    </p>
                   </div>
                 </div>
 
                 {/* How It Works */}
                 <div className="pt-4 border-t">
-                  <p className="text-xs text-muted-foreground mb-2">How it works:</p>
+                  <p className="text-xs text-muted-foreground mb-2">
+                    How it works:
+                  </p>
                   <ul className="text-xs space-y-1">
                     <li className="flex items-center gap-1">
                       <div className="h-1 w-1 rounded-full bg-primary" />
@@ -157,9 +173,9 @@ export const LoyaltyPoints: React.FC = () => {
         )}
       </div>
 
-      <AuthModal 
-        isOpen={showAuthModal} 
-        onClose={() => setShowAuthModal(false)} 
+      <AuthModal
+        isOpen={showAuthModal}
+        onClose={() => setShowAuthModal(false)}
       />
     </>
   );

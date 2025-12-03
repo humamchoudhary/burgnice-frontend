@@ -46,7 +46,7 @@ export const Header = ({ onCartClick }: { onCartClick: () => void }) => {
 
     // Listen to sessionStorage updates from other tabs
     const handleStorage = () => updateCartCount();
-    window.addEventListener("storage", updateCartCount); 
+    window.addEventListener("storage", updateCartCount);
     return () => window.removeEventListener("storage", handleStorage);
   }, []);
 
@@ -78,7 +78,7 @@ export const Header = ({ onCartClick }: { onCartClick: () => void }) => {
         <div className="flex items-center gap-3">
           {/* Loyalty Points */}
           <LoyaltyPoints />
-          
+
           {/* Cart Icon */}
           <Button
             variant="outline"
@@ -115,7 +115,11 @@ export const Header = ({ onCartClick }: { onCartClick: () => void }) => {
           <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
             <SheetTrigger asChild className="md:hidden">
               <Button variant="ghost" size="icon">
-                {mobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+                {mobileMenuOpen ? (
+                  <X className="h-6 w-6" />
+                ) : (
+                  <Menu className="h-6 w-6" />
+                )}
               </Button>
             </SheetTrigger>
             <SheetContent side="right" className="w-80 sm:w-96 p-0">
@@ -155,7 +159,9 @@ export const Header = ({ onCartClick }: { onCartClick: () => void }) => {
                 <div className="space-y-3 pt-4 border-t">
                   {isAuthenticated ? (
                     <div className="space-y-2">
-                      <p className="text-sm text-muted-foreground">Signed in as</p>
+                      <p className="text-sm text-muted-foreground">
+                        Signed in as
+                      </p>
                       <p className="font-semibold">{}</p>
                       <Button
                         variant="outline"
@@ -187,9 +193,9 @@ export const Header = ({ onCartClick }: { onCartClick: () => void }) => {
       </div>
 
       {/* Auth Modal */}
-      <AuthModal 
-        isOpen={showAuthModal} 
-        onClose={() => setShowAuthModal(false)} 
+      <AuthModal
+        isOpen={showAuthModal}
+        onClose={() => setShowAuthModal(false)}
       />
     </header>
   );
