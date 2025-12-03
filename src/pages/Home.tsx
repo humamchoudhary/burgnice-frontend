@@ -109,38 +109,40 @@ export const Home = ({ onAddToCart }: HomeProps) => {
       {/* Promo Banner */}
       <PromoBanner />
 
-      {/* Hero Section */}
-      <section className="relative h-[600px] overflow-hidden bg-gradient-to-br from-background via-accent/30 to-secondary">
+{/* Hero Section */}
+      <section className="relative h-[700px] overflow-hidden bg-gradient-to-br from-background via-accent/20 to-secondary/30">
         <div className="absolute inset-0">
           <img
             src={heroImage}
             alt="Delicious burger at Burg N Ice Manchester"
-            className="w-full h-full object-cover opacity-20 animate-parallax"
+            className="w-full h-full object-cover opacity-30 scale-105 animate-parallax"
           />
-          <div className="absolute inset-0 bg-gradient-to-r from-background/90 via-background/70 to-background/50" />
+          <div className="absolute inset-0 bg-gradient-to-t from-background via-background/80 to-transparent" />
         </div>
-        <div className="relative container mx-auto px-4 h-full flex items-center">
-          <div className="max-w-2xl animate-fade-in">
-            <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold mb-6 leading-tight">
-              Manchester's{" "}
-              <span className="bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
-                Finest
-              </span>{" "}
-              Burgers & Ice Cream
+        <div className="relative container mx-auto px-4 h-full flex items-center justify-center">
+          <div className="max-w-4xl text-center animate-fade-in">
+            <div className="inline-block mb-4 px-4 py-2 rounded-full bg-primary/10 border border-primary/20">
+              <span className="text-sm font-medium text-primary">Welcome to Manchester's Favourite</span>
+            </div>
+            <h1 className="text-5xl md:text-6xl lg:text-8xl font-black mb-6 leading-tight tracking-tight">
+              BURG N ICE
             </h1>
-            <p className="text-xl md:text-2xl text-muted-foreground mb-8">
-              Handcrafted with love, delivered with care. Experience the perfect blend of flavor and freshness.
+            <p className="text-2xl md:text-3xl font-bold mb-4 text-foreground">
+              Burgers & Ice Cream
             </p>
-            <div className="flex flex-wrap gap-4">
+            <p className="text-lg md:text-xl text-muted-foreground mb-10 max-w-2xl mx-auto">
+              Handcrafted perfection. Delivered fresh. Experience Manchester's finest burgers and artisan ice cream.
+            </p>
+            <div className="flex flex-wrap gap-4 justify-center">
               <Link to="/menu">
-                <Button size="lg" className="text-lg h-14 px-8 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
+                <Button size="lg" className="text-lg h-16 px-10 rounded-full shadow-2xl hover:shadow-primary/50 transition-all duration-300 hover:scale-105 font-semibold">
                   Order Now
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </Button>
               </Link>
               <Link to="/about">
-                <Button variant="outline" size="lg" className="text-lg h-14 px-8 hover:bg-secondary transition-all duration-300">
-                  Learn More
+                <Button variant="outline" size="lg" className="text-lg h-16 px-10 rounded-full border-2 hover:bg-accent transition-all duration-300 font-semibold">
+                  Our Story
                 </Button>
               </Link>
             </div>
