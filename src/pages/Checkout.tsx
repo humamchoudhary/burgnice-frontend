@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/contexts/authContext";
-import { Loader2 } from "lucide-react";
+import { Loader2, Tag, Award } from "lucide-react";
 import { toast } from "sonner";
 import { orderAPI } from "@/services/api";
 
@@ -22,6 +22,9 @@ export const Checkout = () => {
   const navigate = useNavigate();
   const { user, isAuthenticated } = useAuth();
   const [items, setItems] = useState<CartItem[]>([]);
+  const [useLoyaltyPoints, setUseLoyaltyPoints] = useState(false);
+  const [discountAmount, setDiscountAmount] = useState(0);
+  const [pointsUsed, setPointsUsed] = useState(0);
   const [form, setForm] = useState({
     customerName: "",
     contactPhone: "",
@@ -31,9 +34,11 @@ export const Checkout = () => {
   });
   const [loading, setLoading] = useState(false);
 
-  // Load cart items from sessionStorage
+  // Load cart items and checkout data from sessionStorage
   useEffect(() => {
     const stored = sessionStorage.getItem("cart");
+    const checkoutData = sessionStorage.getItem("checkoutData");
+    
     if (stored) {
       const cartItems = JSON.parse(stored);
       // Aggregate quantities
@@ -49,6 +54,14 @@ export const Checkout = () => {
       setItems(Object.values(aggregated));
     }
 
+    // Load loyalty points preferences
+    if (checkoutData) {
+      const data = JSON.parse(checkoutData);
+      setUseLoyaltyPoints(data.useLoyaltyPoints || false);
+      setDiscountAmount(data.discountAmount || 0);
+      setPointsUsed(data.pointsUsed || 0);
+    }
+
     // Pre-fill form with user data if logged in
     if (user) {
       setForm(prev => ({
@@ -59,8 +72,9 @@ export const Checkout = () => {
     }
   }, [user]);
 
-  const total = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
-  const pointsEarned = Math.floor(total / 10);
+  const subtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  const pointsEarned = Math.floor(subtotal / 10);
+  const total = Math.max(0, subtotal - discountAmount);
 
   const updateField = (field: keyof typeof form, value: string) => {
     setForm((prev) => ({ ...prev, [field]: value }));
@@ -86,29 +100,38 @@ export const Checkout = () => {
 
     const payload = {
       orderItems: orderItems,
+      subtotal: subtotal,
+      discountAmount: discountAmount,
+      loyaltyPointsUsed: pointsUsed,
       total: total,
       deliveryAddress: form.deliveryAddress,
       paymentMethod: form.paymentMethod,
       notes: form.notes,
       contactPhone: form.contactPhone,
       customerName: form.customerName,
-      status: 'pending' as const
+      status: 'pending' as const,
+      loyaltyPointsEarned: pointsEarned
     };
 
     setLoading(true);
     try {
-      // Use the new orderAPI.create method
       const response = await orderAPI.create(payload);
 
       toast.success("Order placed successfully!");
       
-      // Show loyalty points earned if user is logged in
-      if (isAuthenticated && response.loyaltyPointsEarned) {
-        toast.success(`You earned ${response.loyaltyPointsEarned} loyalty points!`);
+      // Show loyalty points earned and used
+      if (isAuthenticated) {
+        if (response.loyaltyPointsEarned) {
+          toast.success(`You earned ${response.loyaltyPointsEarned} loyalty points!`);
+        }
+        if (pointsUsed > 0) {
+          toast.info(`You used ${pointsUsed} loyalty points for a £${discountAmount.toFixed(2)} discount!`);
+        }
       }
 
-      // Clear cart
+      // Clear cart and checkout data
       sessionStorage.removeItem("cart");
+      sessionStorage.removeItem("checkoutData");
       window.dispatchEvent(new Event("cart-updated"));
 
       // Redirect to home
@@ -241,11 +264,32 @@ export const Checkout = () => {
 
                   <Separator />
 
-                  {/* Loyalty Points */}
+                  {/* Loyalty Points Discount */}
+                  {isAuthenticated && useLoyaltyPoints && discountAmount > 0 && (
+                    <div className="p-3 bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg border border-green-200">
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center gap-2">
+                          <Tag className="h-4 w-4 text-green-600" />
+                          <span className="text-sm font-medium text-green-800">Loyalty Discount Applied</span>
+                        </div>
+                        <span className="text-lg font-bold text-green-700">
+                          -£{discountAmount.toFixed(2)}
+                        </span>
+                      </div>
+                      <p className="text-xs text-green-600">
+                        You used {pointsUsed} points ({Math.floor(pointsUsed / 10) * 10}% discount)
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Loyalty Points Earned */}
                   {isAuthenticated && (
                     <div className="p-3 bg-primary/5 rounded-lg border border-primary/20">
                       <div className="flex items-center justify-between mb-2">
-                        <span className="text-sm font-medium">Loyalty Points Earned</span>
+                        <div className="flex items-center gap-2">
+                          <Award className="h-4 w-4 text-primary" />
+                          <span className="text-sm font-medium">Loyalty Points Earned</span>
+                        </div>
                         <span className="text-lg font-bold text-primary">
                           +{pointsEarned}
                         </span>
@@ -260,18 +304,36 @@ export const Checkout = () => {
                   <div className="space-y-2">
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">Subtotal</span>
-                      <span>£{total.toFixed(2)}</span>
+                      <span>£{subtotal.toFixed(2)}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">Delivery</span>
                       <span className="text-green-600">Free</span>
                     </div>
+                    
+                    {discountAmount > 0 && (
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Loyalty Discount</span>
+                        <span className="text-green-600">-£{discountAmount.toFixed(2)}</span>
+                      </div>
+                    )}
+                    
                     <Separator />
                     <div className="flex justify-between text-lg font-bold">
                       <span>Total</span>
                       <span className="text-primary">£{total.toFixed(2)}</span>
                     </div>
                   </div>
+
+                  {/* Loyalty Points Note */}
+                  {isAuthenticated && !useLoyaltyPoints && user?.loyaltyPoints && user.loyaltyPoints >= 10 && total >= 10 && (
+                    <div className="p-3 bg-secondary/30 rounded-lg border">
+                      <p className="text-xs text-center text-muted-foreground">
+                        💡 You have {user.loyaltyPoints} loyalty points available. 
+                        Go back to cart to apply {Math.floor(user.loyaltyPoints / 10) * 10}% discount!
+                      </p>
+                    </div>
+                  )}
 
                   {/* Place Order Button */}
                   <Button

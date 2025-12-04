@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState } from "react";
 import { User, LogOut, Package, Settings, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -13,13 +13,51 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useNavigate } from "react-router-dom";
 
 export const UserMenu: React.FC = () => {
-  const { user, logout } = useAuth();
-  console.log(user);
-
+  const { user, logout, loading } = useAuth();
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
 
-  if (!user) return null;
+  // Show loading state
+  if (loading) {
+    return (
+      <Button
+        variant="ghost"
+        className="h-12 px-3 rounded-full"
+        disabled
+      >
+        <div className="flex items-center gap-2">
+          <Avatar className="h-8 w-8">
+            <AvatarFallback className="bg-gray-200 animate-pulse" />
+          </Avatar>
+          <div className="hidden md:block">
+            <div className="h-4 w-20 bg-gray-200 rounded animate-pulse"></div>
+            <div className="h-3 w-16 bg-gray-200 rounded animate-pulse mt-1"></div>
+          </div>
+        </div>
+      </Button>
+    );
+  }
+
+  // If not authenticated, show login button
+  if (!user) {
+    return (
+      <div className="flex items-center gap-2">
+        <Button
+          variant="ghost"
+          onClick={() => navigate('/login')}
+          className="h-10"
+        >
+          Login
+        </Button>
+        <Button
+          onClick={() => navigate('/register')}
+          className="h-10"
+        >
+          Sign Up
+        </Button>
+      </div>
+    );
+  }
 
   const handleLogout = () => {
     logout();
@@ -30,11 +68,12 @@ export const UserMenu: React.FC = () => {
   const handleProfileClick = () => {
     setIsOpen(false);
     // Navigate to profile page when created
+    navigate('/profile');
   };
 
   const handleOrdersClick = () => {
     setIsOpen(false);
-    // Navigate to orders page when created
+    navigate('/orders');
   };
 
   return (
@@ -47,16 +86,16 @@ export const UserMenu: React.FC = () => {
           <div className="flex items-center gap-2">
             <Avatar className="h-8 w-8 ring-2 ring-primary/20 group-hover:ring-primary/40 transition-all">
               <AvatarFallback className="bg-primary/10 text-primary font-semibold">
-                {user.user.username.charAt(0).toUpperCase()}
+                {user.username?.charAt(0).toUpperCase() || 'U'}
               </AvatarFallback>
             </Avatar>
 
             <div className="hidden md:flex flex-col items-start">
               <span className="text-sm font-semibold leading-none">
-                {user.user.username}
+                {user.username || 'User'}
               </span>
               <span className="text-xs text-muted-foreground">
-                {user.user.loyaltyPoints} points
+                {user.loyaltyPoints || 0} points
               </span>
             </div>
 
@@ -75,13 +114,13 @@ export const UserMenu: React.FC = () => {
           <div className="flex items-center gap-3">
             <Avatar className="h-10 w-10">
               <AvatarFallback className="bg-primary/10 text-primary font-semibold">
-                {user.user.username.charAt(0).toUpperCase()}
+                {user.username?.charAt(0).toUpperCase() || 'U'}
               </AvatarFallback>
             </Avatar>
             <div className="flex-1 min-w-0">
-              <p className="font-semibold text-sm truncate">{user.user.name}</p>
+              <p className="font-semibold text-sm truncate">{user.username || 'User'}</p>
               <p className="text-xs text-muted-foreground truncate">
-                {user.user.email}
+                {user.email || 'No email'}
               </p>
             </div>
           </div>
@@ -89,14 +128,14 @@ export const UserMenu: React.FC = () => {
             <div className="flex items-center justify-between text-xs">
               <span className="text-muted-foreground">Loyalty Points</span>
               <span className="font-bold text-primary">
-                {user.user.loyaltyPoints}
+                {user.loyaltyPoints || 0}
               </span>
             </div>
             <div className="h-1.5 bg-secondary rounded-full overflow-hidden mt-1">
               <div
                 className="h-full bg-gradient-to-r from-primary to-primary/70 rounded-full"
                 style={{
-                  width: `${Math.min(user.user.loyaltyPoints % 100, 100)}%`,
+                  width: `${Math.min((user.loyaltyPoints || 0) % 100, 100)}%`,
                 }}
               />
             </div>

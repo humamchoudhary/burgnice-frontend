@@ -65,21 +65,58 @@ export interface MenuItem {
   updatedAt?: string;
 }
 
+// Enhanced Order interface with loyalty points
 export interface Order {
   _id: string;
   user?: string;
+  customerName: string;
+  contactPhone: string;
   orderItems: Array<{
     menuItem: MenuItem | string;
     quantity: number;
+    price: number;
     notes?: string;
   }>;
+  subtotal: number;
+  discountAmount: number;
+  loyaltyPointsUsed: number;
   total: number;
   status: 'pending' | 'preparing' | 'completed' | 'cancelled';
-  deliveryAddress?: string;
-  contactPhone?: string;
+  deliveryAddress: string;
+  paymentMethod: string;
   notes?: string;
+  loyaltyPointsEarned: number;
   createdAt?: string;
   updatedAt?: string;
+}
+
+// Loyalty discount calculation interface
+export interface LoyaltyDiscount {
+  eligible: boolean;
+  discountAmount: number;
+  pointsUsed: number;
+  discountPercentage: number;
+  finalTotal: number;
+  remainingPoints: number;
+  message?: string;
+}
+
+// Loyalty summary interface
+export interface LoyaltySummary {
+  isLoggedIn: boolean;
+  loyaltyPoints: number;
+  loyaltyPointsUsed?: number;
+  totalSpent: number;
+  pointsHistory: Array<{
+    orderId: string;
+    date: string;
+    amount: number;
+    pointsEarned: number;
+    pointsUsed: number;
+    discountApplied: number;
+    status: string;
+  }>;
+  message?: string;
 }
 
 // Query parameter interfaces
@@ -115,7 +152,7 @@ export interface PaginatedResponse<T> {
   hasPrev: boolean;
 }
 
-// API functions
+// Enhanced API functions
 export const categoryAPI = {
   // Basic CRUD
   getAll: async (): Promise<Category[]> => {
@@ -253,6 +290,50 @@ export const orderAPI = {
     const response = await api.get('/orders/stats');
     return response.data;
   },
+  
+  // Loyalty points operations
+  getLoyaltySummary: async (): Promise<LoyaltySummary> => {
+    const response = await api.get('/orders/loyalty-summary');
+    return response.data;
+  },
+  
+  calculateLoyaltyDiscount: async (orderTotal: number): Promise<LoyaltyDiscount> => {
+    const response = await api.post('/orders/calculate-loyalty-discount', { orderTotal });
+    return response.data;
+  },
+  
+  // Enhanced create order with loyalty points
+  createOrderWithLoyalty: async (orderData: {
+    orderItems: Array<{
+      menuItem: string;
+      quantity: number;
+      price: number;
+    }>;
+    subtotal: number;
+    discountAmount?: number;
+    loyaltyPointsUsed?: number;
+    total: number;
+    deliveryAddress: string;
+    paymentMethod: string;
+    notes?: string;
+    contactPhone: string;
+    customerName: string;
+    loyaltyPointsEarned?: number;
+  }): Promise<{
+    order: Order;
+    loyaltyPointsEarned: number;
+    loyaltyPointsUsed: number;
+    discountAmount: number;
+    totalLoyaltyPoints: number;
+    user?: {
+      id: string;
+      username: string;
+      loyaltyPoints: number;
+    };
+  }> => {
+    const response = await api.post('/orders', orderData);
+    return response.data;
+  },
 };
 
 // Auth API
@@ -287,6 +368,66 @@ export const authAPI = {
   },
 };
 
+// Loyalty API utilities
+export const loyaltyAPI = {
+  // Get user's current loyalty points
+  getPoints: async (): Promise<number> => {
+    const response = await api.get('/orders/loyalty-summary');
+    return response.data.loyaltyPoints || 0;
+  },
+  
+  // Check if user is eligible for discount
+  checkDiscountEligibility: async (orderTotal: number): Promise<{
+    eligible: boolean;
+    discountAmount: number;
+    pointsNeeded: number;
+    message: string;
+  }> => {
+    try {
+      const response = await api.post('/orders/calculate-loyalty-discount', { orderTotal });
+      return {
+        eligible: response.data.eligible || false,
+        discountAmount: response.data.discountAmount || 0,
+        pointsNeeded: response.data.pointsNeeded || 0,
+        message: response.data.message || ''
+      };
+    } catch (error) {
+      return {
+        eligible: false,
+        discountAmount: 0,
+        pointsNeeded: 0,
+        message: 'Unable to check discount eligibility'
+      };
+    }
+  },
+  
+  // Get loyalty points history
+  getHistory: async (): Promise<LoyaltySummary['pointsHistory']> => {
+    const response = await api.get('/orders/loyalty-summary');
+    return response.data.pointsHistory || [];
+  },
+};
+
+// Cart API utilities (for session storage sync)
+export const cartAPI = {
+  // Sync cart from guest to logged-in user
+  syncCart: async (cartItems: any[]): Promise<any> => {
+    const response = await api.post('/cart/sync', { cartItems });
+    return response.data;
+  },
+  
+  // Get cart from backend (for logged-in users)
+  getCart: async (): Promise<any[]> => {
+    try {
+      const response = await api.get('/cart');
+      return response.data.cart || [];
+    } catch (error) {
+      console.warn('Failed to get cart from backend:', error);
+      return [];
+    }
+  },
+};
+
 // Auth utilities
 export const setAuthToken = (token: string | null): void => {
   if (token) {
@@ -304,6 +445,41 @@ export const getAuthToken = (): string | null => {
 
 export const clearAuth = (): void => {
   setAuthToken(null);
+};
+
+// Utility function to calculate discount locally
+export const calculateLocalDiscount = (points: number, orderTotal: number): {
+  eligible: boolean;
+  discountAmount: number;
+  pointsUsed: number;
+  discountPercentage: number;
+  message: string;
+} => {
+  if (points < 10 || orderTotal < 10) {
+    return {
+      eligible: false,
+      discountAmount: 0,
+      pointsUsed: 0,
+      discountPercentage: 0,
+      message: points < 10 ? 
+        'Minimum 10 loyalty points required' : 
+        'Minimum £10 order required for loyalty discount'
+    };
+  }
+  
+  // Calculate how many 10-point stacks can be used
+  const maxStacks = Math.floor(points / 10);
+  const discountPercentage = Math.min(maxStacks * 10, 50); // Max 50% discount
+  const discountAmount = (orderTotal * discountPercentage) / 100;
+  const pointsUsed = maxStacks * 10;
+  
+  return {
+    eligible: true,
+    discountAmount: parseFloat(discountAmount.toFixed(2)),
+    pointsUsed,
+    discountPercentage,
+    message: `${discountPercentage}% discount applied using ${pointsUsed} points`
+  };
 };
 
 // Initialize auth token on app start
