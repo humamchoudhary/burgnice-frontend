@@ -173,15 +173,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       setUser(userObj);
       localStorage.setItem('user', JSON.stringify(userObj));
       
-      // Set cart from profile response if available
-      if (profileData.cart) {
-        setCart(profileData.cart);
-        const { count, total } = calculateCartMetrics(profileData.cart);
-        setCartCount(count);
-        setCartTotal(total);
-      }
-      
-      // Also fetch cart separately to ensure we have latest
+      // Fetch cart separately since authAPI doesn't return cart
       await fetchCart();
     } catch (error) {
       console.error('Failed to fetch profile/cart:', error);
@@ -234,22 +226,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       // Set user state
       setUser(userObj);
       
-      // Set cart from login response
-      if (response.cart) {
-        setCart(response.cart);
-        const { count, total } = calculateCartMetrics(response.cart);
-        setCartCount(count);
-        setCartTotal(total);
-      }
-      
       toast.success('Login successful!');
       
       // Sync guest cart after successful login
-      if (response.sessionCartSynced) {
-        toast.info('Your guest cart items have been added to your account!');
-      } else {
-        await syncCartAfterLogin();
-      }
+      await syncCartAfterLogin();
       
     } catch (error: any) {
       const errorMessage = error.response?.data?.message || error.message || 'Login failed';
@@ -287,22 +267,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       // Set user state
       setUser(userObj);
       
-      // Set cart from register response
-      if (response.cart) {
-        setCart(response.cart);
-        const { count, total } = calculateCartMetrics(response.cart);
-        setCartCount(count);
-        setCartTotal(total);
-      }
-      
       toast.success('Registration successful!');
       
       // Sync guest cart after successful registration
-      if (response.sessionCartSynced) {
-        toast.info('Your guest cart items have been added to your account!');
-      } else {
-        await syncCartAfterLogin();
-      }
+      await syncCartAfterLogin();
       
     } catch (error: any) {
       const errorMessage = error.response?.data?.message || error.message || 'Registration failed';

@@ -1,8 +1,10 @@
 import { useEffect, useState } from "react";
-import { Star, ChevronLeft, ChevronRight } from "lucide-react";
+import { Star, ChevronLeft, ChevronRight, Quote, Sparkles } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { ReviewModal, ReviewData } from "@/components/ReviewModal";
+import { toast } from "sonner";
 
 interface Testimonial {
   name: string;
@@ -10,61 +12,98 @@ interface Testimonial {
   text: string;
   date: string;
   initials: string;
+  location?: string;
+  type?: string;
 }
 
 const testimonials: Testimonial[] = [
   {
     name: "Sarah M.",
     rating: 5,
-    text: "Best burgers in Manchester! The bacon cheeseburger is absolutely divine. Can't wait to come back!",
+    text: "Best burgers in Manchester! The bacon cheeseburger is absolutely divine. Can't wait to come back for more!",
     date: "2 weeks ago",
     initials: "SM",
+    location: "Deansgate",
+    type: "Burger Lover"
   },
   {
     name: "James T.",
     rating: 5,
-    text: "Amazing food and great service. The ice cream is the perfect way to end your meal. Highly recommend!",
+    text: "Amazing food and incredible service. The salted caramel ice cream is the perfect way to end any meal. Highly recommend!",
     date: "1 month ago",
     initials: "JT",
+    location: "Manchester City Centre",
+    type: "Regular Customer"
   },
   {
     name: "Emily R.",
     rating: 5,
-    text: "Absolutely love this place! The burgers are juicy, the fries are crispy, and the staff are friendly.",
+    text: "Absolutely love this place! The burgers are juicy perfection, the fries are crispy, and the staff always make us feel welcome.",
     date: "3 weeks ago",
     initials: "ER",
+    location: "Salford Quays",
+    type: "Food Enthusiast"
   },
   {
     name: "Michael P.",
     rating: 5,
-    text: "Outstanding quality and portion sizes. The delivery was super quick too. Five stars!",
+    text: "Outstanding quality and generous portion sizes. Delivery was super quick too. Five stars all around!",
     date: "1 week ago",
     initials: "MP",
+    location: "Northern Quarter",
+    type: "Delivery Customer"
   },
   {
     name: "Lisa K.",
     rating: 5,
-    text: "The veggie burger exceeded my expectations. Finally, a place that does plant-based right!",
+    text: "The veggie burger exceeded all expectations. Finally, a place that does plant-based burgers right - absolutely delicious!",
     date: "4 days ago",
     initials: "LK",
+    location: "Ancoats",
+    type: "Vegetarian Foodie"
+  },
+  {
+    name: "David W.",
+    rating: 5,
+    text: "Family favorite spot! Kids love the ice cream, we love the burgers. Perfect combination for a family meal out.",
+    date: "2 days ago",
+    initials: "DW",
+    location: "MediaCity",
+    type: "Family Regular"
   },
 ];
 
 export const TestimonialCarousel = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isAutoPlaying, setIsAutoPlaying] = useState(true);
+  const [itemsToShow, setItemsToShow] = useState(3);
+  const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
 
-  const itemsToShow = window.innerWidth >= 1024 ? 3 : window.innerWidth >= 768 ? 2 : 1;
+  useEffect(() => {
+    const updateItemsToShow = () => {
+      if (window.innerWidth >= 1280) {
+        setItemsToShow(3);
+      } else if (window.innerWidth >= 768) {
+        setItemsToShow(2);
+      } else {
+        setItemsToShow(1);
+      }
+    };
+
+    updateItemsToShow();
+    window.addEventListener("resize", updateItemsToShow);
+    return () => window.removeEventListener("resize", updateItemsToShow);
+  }, []);
 
   const nextSlide = () => {
     setCurrentIndex((prev) =>
-      prev + itemsToShow >= testimonials.length ? 0 : prev + 1
+      prev + itemsToShow >= testimonials.length ? 0 : prev + itemsToShow
     );
   };
 
   const prevSlide = () => {
     setCurrentIndex((prev) =>
-      prev === 0 ? Math.max(0, testimonials.length - itemsToShow) : prev - 1
+      prev === 0 ? testimonials.length - itemsToShow : prev - itemsToShow
     );
   };
 
@@ -76,97 +115,168 @@ export const TestimonialCarousel = () => {
     }, 5000);
 
     return () => clearInterval(interval);
-  }, [currentIndex, isAutoPlaying, itemsToShow]);
+  }, [currentIndex, isAutoPlaying]);
 
   const visibleTestimonials = testimonials.slice(
     currentIndex,
-    currentIndex + itemsToShow
+    Math.min(currentIndex + itemsToShow, testimonials.length)
   );
 
+  // If we're at the end and don't have enough items, fill from the beginning
+  const finalVisibleTestimonials = visibleTestimonials.length < itemsToShow
+    ? [
+        ...visibleTestimonials,
+        ...testimonials.slice(0, itemsToShow - visibleTestimonials.length)
+      ]
+    : visibleTestimonials;
+
+  const handleReviewSubmit = async (reviewData: ReviewData) => {
+    return new Promise<void>((resolve) => {
+      setTimeout(() => {
+        console.log("Review submitted:", reviewData);
+        toast.success("Thank you for your review! It will appear after moderation.");
+        resolve();
+      }, 1500);
+    });
+  };
+
   return (
-    <section className="py-20 bg-secondary/30">
-      <div className="container mx-auto px-4">
-        <h2 className="text-4xl md:text-5xl font-bold mb-12 text-center text-foreground animate-fade-in">
-          What Our Customers Say
-        </h2>
+    <section className="py-24 relative overflow-hidden">
+      {/* Background decoration */}
+      <div className="absolute inset-0 bg-gradient-to-b from-background via-secondary/5 to-transparent"></div>
+      <div className="absolute top-20 left-10 w-96 h-96 bg-primary/5 rounded-full blur-3xl"></div>
+      <div className="absolute bottom-20 right-10 w-96 h-96 bg-secondary/5 rounded-full blur-3xl"></div>
+      
+      <div className="relative container mx-auto px-4">
+        <div className="max-w-4xl mx-auto text-center mb-16">
+          <div className="inline-flex items-center gap-2 mb-6 px-4 py-2 rounded-full bg-gradient-to-r from-primary/10 via-primary/5 to-primary/10 border border-primary/30">
+            <Sparkles className="h-4 w-4 text-primary" />
+            <span className="text-sm font-medium text-primary">Customer Stories</span>
+          </div>
+          
+          <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 text-foreground">
+            Loved by{" "}
+            <span className="bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
+              Manchester
+            </span>
+          </h2>
+          
+          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+            Hear what our customers have to say about their Burg N Ice experience
+          </p>
+        </div>
 
         <div
           className="relative"
           onMouseEnter={() => setIsAutoPlaying(false)}
           onMouseLeave={() => setIsAutoPlaying(true)}
         >
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 min-h-[280px]">
-            {visibleTestimonials.map((testimonial, index) => (
-              <Card
+          {/* Carousel Container */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8 mb-12">
+            {finalVisibleTestimonials.map((testimonial, index) => (
+              <div
                 key={`${testimonial.name}-${currentIndex}-${index}`}
-                className="h-full transition-all duration-500 hover:shadow-lg hover:-translate-y-1 animate-fade-in"
+                className="animate-fade-in"
+                style={{ animationDelay: `${index * 100}ms` }}
               >
-                <CardContent className="p-6">
-                  <div className="flex items-center gap-4 mb-4">
-                    <Avatar className="h-12 w-12 bg-primary/10">
-                      <AvatarFallback className="bg-primary/20 text-primary font-bold">
-                        {testimonial.initials}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="flex-1">
-                      <p className="font-semibold text-foreground">{testimonial.name}</p>
-                      <div className="flex items-center gap-2">
-                        <div className="flex gap-1">
-                          {[...Array(5)].map((_, i) => (
-                            <Star
-                              key={i}
-                              className={`h-4 w-4 ${
-                                i < testimonial.rating
-                                  ? "fill-primary text-primary"
-                                  : "fill-muted text-muted"
-                              }`}
-                            />
-                          ))}
+                <Card className="h-full group border-0 bg-gradient-to-b from-background to-accent/5 hover:to-primary/5 transition-all duration-500 hover:shadow-2xl hover:-translate-y-2">
+                  <CardContent className="p-6 md:p-8">
+                    <div className="relative">
+                      <Quote className="absolute -top-2 -left-2 h-8 w-8 text-primary/20 group-hover:text-primary/30 transition-colors" />
+                      
+                      {/* Customer Info */}
+                      <div className="flex items-start gap-3 mb-4">
+                        <Avatar className="h-12 w-12 md:h-14 md:w-14 ring-2 ring-primary/20 group-hover:ring-primary/40 transition-all duration-300 flex-shrink-0">
+                          <AvatarFallback className="bg-gradient-to-br from-primary/20 to-primary/10 text-primary font-bold text-lg">
+                            {testimonial.initials}
+                          </AvatarFallback>
+                        </Avatar>
+                        
+                        <div className="flex-1 min-w-0 space-y-1">
+                          {/* Name and Rating */}
+                          <div className="flex items-start justify-between gap-2">
+                            <div>
+                              <h4 className="font-bold text-foreground text-base md:text-lg truncate">
+                                {testimonial.name}
+                              </h4>
+                              {testimonial.type && (
+                                <span className="text-xs text-primary font-medium px-2 py-0.5 bg-primary/10 rounded-full inline-block mt-1">
+                                  {testimonial.type}
+                                </span>
+                              )}
+                            </div>
+                            <div className="flex gap-0.5 flex-shrink-0">
+                              {[...Array(5)].map((_, i) => (
+                                <Star
+                                  key={i}
+                                  className={`h-3 w-3 md:h-4 md:w-4 ${
+                                    i < testimonial.rating
+                                      ? "fill-amber-500 text-amber-500"
+                                      : "fill-muted text-muted"
+                                  }`}
+                                />
+                              ))}
+                            </div>
+                          </div>
+                          
+                          {/* Location and Date */}
+                          <div className="flex items-center gap-1.5 text-xs md:text-sm text-muted-foreground">
+                            {testimonial.location && (
+                              <>
+                                <span className="truncate">{testimonial.location}</span>
+                                <span className="text-xs opacity-50">•</span>
+                              </>
+                            )}
+                            <span>{testimonial.date}</span>
+                          </div>
                         </div>
-                        <span className="text-xs text-muted-foreground">
-                          {testimonial.date}
-                        </span>
+                      </div>
+                      
+                      {/* Testimonial Text */}
+                      <div className="mt-4 md:mt-6">
+                        <p className="text-muted-foreground leading-relaxed italic text-sm md:text-base relative pl-4 border-l-2 border-primary/30">
+                          "{testimonial.text}"
+                        </p>
                       </div>
                     </div>
-                  </div>
-                  <p className="text-sm text-muted-foreground italic">
-                    "{testimonial.text}"
-                  </p>
-                </CardContent>
-              </Card>
+                  </CardContent>
+                </Card>
+              </div>
             ))}
           </div>
 
+          {/* Navigation Buttons */}
           {testimonials.length > itemsToShow && (
             <>
               <Button
                 variant="outline"
                 size="icon"
-                className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 rounded-full shadow-lg bg-background/95 backdrop-blur hover:scale-110 transition-all duration-300"
+                className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 lg:-translate-x-6 rounded-full shadow-2xl bg-background/95 backdrop-blur-sm border-2 hover:bg-primary hover:text-primary-foreground hover:scale-110 hover:shadow-primary/30 transition-all duration-300 group"
                 onClick={prevSlide}
               >
-                <ChevronLeft className="h-5 w-5" />
+                <ChevronLeft className="h-5 w-5 group-hover:-translate-x-0.5 transition-transform" />
               </Button>
 
               <Button
                 variant="outline"
                 size="icon"
-                className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 rounded-full shadow-lg bg-background/95 backdrop-blur hover:scale-110 transition-all duration-300"
+                className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 lg:translate-x-6 rounded-full shadow-2xl bg-background/95 backdrop-blur-sm border-2 hover:bg-primary hover:text-primary-foreground hover:scale-110 hover:shadow-primary/30 transition-all duration-300 group"
                 onClick={nextSlide}
               >
-                <ChevronRight className="h-5 w-5" />
+                <ChevronRight className="h-5 w-5 group-hover:translate-x-0.5 transition-transform" />
               </Button>
 
-              <div className="flex justify-center gap-2 mt-8">
+              {/* Pagination Dots */}
+              <div className="flex justify-center gap-3 mt-12">
                 {Array.from({
                   length: Math.ceil(testimonials.length / itemsToShow),
                 }).map((_, index) => (
                   <button
                     key={index}
-                    className={`h-2 rounded-full transition-all duration-300 ${
+                    className={`rounded-full transition-all duration-300 ${
                       Math.floor(currentIndex / itemsToShow) === index
-                        ? "w-8 bg-primary"
-                        : "w-2 bg-muted hover:bg-muted-foreground"
+                        ? "w-10 h-2 bg-gradient-to-r from-primary to-primary/80 shadow-md"
+                        : "w-2 h-2 bg-muted hover:bg-muted-foreground"
                     }`}
                     onClick={() => setCurrentIndex(index * itemsToShow)}
                   />
@@ -174,8 +284,56 @@ export const TestimonialCarousel = () => {
               </div>
             </>
           )}
+
+          {/* Stats Section */}
+          <div className="mt-16 max-w-4xl mx-auto">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {[
+                { label: "Average Rating", value: "4.9★" },
+                { label: "Happy Customers", value: "5K+" },
+                { label: "5-Star Reviews", value: "98%" },
+                { label: "Would Recommend", value: "99%" },
+              ].map((stat, index) => (
+                <div 
+                  key={index}
+                  className="text-center p-4 rounded-2xl bg-gradient-to-b from-background to-accent/5 border border-accent/10 hover:border-accent/30 transition-all duration-300 hover:-translate-y-1"
+                >
+                  <div className="text-2xl md:text-3xl font-bold text-primary mb-1">
+                    {stat.value}
+                  </div>
+                  <div className="text-xs text-muted-foreground">
+                    {stat.label}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Call to Action */}
+        <div className="text-center mt-16">
+          <p className="text-lg text-muted-foreground mb-6">
+            Join our satisfied customers and share your Burg N Ice experience
+          </p>
+          <Button 
+            size="lg" 
+            className="rounded-full px-8 bg-gradient-to-r from-primary to-primary/80 hover:from-primary hover:to-primary shadow-xl hover:shadow-primary/50 transition-all duration-300 hover:scale-105"
+            onClick={() => setIsReviewModalOpen(true)}
+          >
+            <span className="flex items-center gap-2">
+              Write a Review
+              <Sparkles className="h-4 w-4" />
+            </span>
+          </Button>
         </div>
       </div>
+
+      {/* Review Modal */}
+      <ReviewModal
+        isOpen={isReviewModalOpen}
+        onClose={() => setIsReviewModalOpen(false)}
+        onSubmit={handleReviewSubmit}
+      />
     </section>
   );
 };

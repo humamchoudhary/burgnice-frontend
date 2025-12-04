@@ -1,157 +1,367 @@
-import { MapPin, Clock, Phone, Mail, Heart, Award, Users } from "lucide-react";
+import { MapPin, Clock, Phone, Mail, Heart, Award, Users, Sparkles, Star, Leaf, Truck } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 
 export const About = () => {
   return (
     <div className="min-h-screen">
-      {/* Hero Section */}
-      <section className="py-20 bg-gradient-to-br from-background via-accent/30 to-secondary">
-        <div className="container mx-auto px-4">
-          <div className="max-w-3xl mx-auto text-center">
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 text-foreground">About Burg N Ice</h1>
-            <p className="text-xl text-muted-foreground leading-relaxed">
-              Serving Manchester's finest burgers and ice cream since 2020. Our passion for quality ingredients and exceptional taste drives everything we do.
+      {/* Hero Section - Enhanced */}
+      <section className="relative py-24 overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-background via-accent/40 to-secondary/60"></div>
+        <div className="absolute top-0 left-0 w-full h-32 bg-gradient-to-b from-background to-transparent"></div>
+        
+        {/* Decorative elements */}
+        <div className="absolute top-20 left-10 w-48 h-48 bg-primary/10 rounded-full blur-3xl"></div>
+        <div className="absolute bottom-20 right-10 w-64 h-64 bg-secondary/10 rounded-full blur-3xl"></div>
+        
+        <div className="relative container mx-auto px-4 z-10">
+          <div className="max-w-4xl mx-auto text-center">
+            <div className="inline-flex items-center gap-3 mb-8">
+              <div className="w-12 h-px bg-gradient-to-r from-transparent via-primary to-transparent"></div>
+              <span className="flex items-center gap-2 text-sm font-semibold text-primary tracking-wider uppercase">
+                <Sparkles className="h-4 w-4" />
+                Our Story
+              </span>
+              <div className="w-12 h-px bg-gradient-to-r from-transparent via-primary to-transparent"></div>
+            </div>
+            
+            <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold mb-8 text-foreground">
+              More Than Just{" "}
+              <span className="relative">
+                <span className="relative z-10 bg-gradient-to-r from-primary via-primary/80 to-primary bg-clip-text text-transparent">
+                  Food
+                </span>
+                <span className="absolute -bottom-2 left-0 right-0 h-3 bg-primary/20 -rotate-1"></span>
+              </span>
+            </h1>
+            
+            <p className="text-xl md:text-2xl text-muted-foreground leading-relaxed max-w-3xl mx-auto mb-12">
+              Since 2020, we've been serving Manchester's finest burgers and ice cream, blending culinary excellence with community spirit.
+            </p>
+            
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-2xl mx-auto">
+              {[2020, 5000, 4.9, 100].map((value, index) => (
+                <div key={index} className="text-center p-4 rounded-2xl bg-gradient-to-b from-background to-accent/5 border border-accent/10">
+                  <div className="text-2xl font-bold text-primary mb-1">
+                    {index === 2 ? `${value}★` : value.toLocaleString()}
+                  </div>
+                  <div className="text-xs text-muted-foreground">
+                    {['Established', 'Happy Customers', 'Avg Rating', 'Local Suppliers'][index]}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Values Section - Enhanced */}
+      <section className="py-24 relative">
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-secondary/5 to-transparent"></div>
+        <div className="relative container mx-auto px-4">
+          <div className="max-w-3xl mx-auto text-center mb-16">
+            <h2 className="text-4xl md:text-5xl font-bold mb-6 text-foreground">
+              The{" "}
+              <span className="bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
+                Burg N Ice
+              </span>{" "}
+              Difference
+            </h2>
+            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+              What sets us apart in Manchester's vibrant food scene
             </p>
           </div>
-        </div>
-      </section>
 
-      {/* Values Section */}
-      <section className="py-20">
-        <div className="container mx-auto px-4">
-          <h2 className="text-3xl md:text-4xl font-bold mb-12 text-center text-foreground">What Makes Us Special</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <Card className="text-center transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
-              <CardContent className="pt-8 pb-8">
-                <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Heart className="h-8 w-8 text-primary" />
-                </div>
-                <h3 className="text-xl font-bold mb-3 text-foreground">Made with Love</h3>
-                <p className="text-muted-foreground">Every burger is crafted with care using the finest locally-sourced ingredients.</p>
-              </CardContent>
-            </Card>
-
-            <Card className="text-center transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
-              <CardContent className="pt-8 pb-8">
-                <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Award className="h-8 w-8 text-primary" />
-                </div>
-                <h3 className="text-xl font-bold mb-3 text-foreground">Award Winning</h3>
-                <p className="text-muted-foreground">Recognized as one of Manchester's top burger spots by local food critics.</p>
-              </CardContent>
-            </Card>
-
-            <Card className="text-center transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
-              <CardContent className="pt-8 pb-8">
-                <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Users className="h-8 w-8 text-primary" />
-                </div>
-                <h3 className="text-xl font-bold mb-3 text-foreground">Community First</h3>
-                <p className="text-muted-foreground">We're proud to be part of the Manchester community, supporting local suppliers.</p>
-              </CardContent>
-            </Card>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            {[
+              {
+                icon: Leaf,
+                title: "Farm Fresh",
+                description: "All ingredients sourced daily from local Manchester farms and suppliers.",
+                color: "text-green-500",
+                bgColor: "bg-green-500/10"
+              },
+              {
+                icon: Heart,
+                title: "Handcrafted",
+                description: "Every burger patty is shaped by hand, every ice cream batch is churned fresh.",
+                color: "text-pink-500",
+                bgColor: "bg-pink-500/10"
+              },
+              {
+                icon: Award,
+                title: "Award Winning",
+                description: "Recognized as Manchester's top burger joint in 2023 Food Awards.",
+                color: "text-amber-500",
+                bgColor: "bg-amber-500/10"
+              },
+              {
+                icon: Users,
+                title: "Community First",
+                description: "We support local charities and host monthly community events.",
+                color: "text-blue-500",
+                bgColor: "bg-blue-500/10"
+              }
+            ].map((value, index) => (
+              <Card 
+                key={index} 
+                className="relative group overflow-hidden border-0 bg-gradient-to-b from-background to-secondary/5 transition-all duration-500 hover:shadow-2xl hover:-translate-y-2 hover:scale-105"
+              >
+                <div className="absolute inset-0 bg-gradient-to-br from-transparent via-transparent to-primary/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                <CardContent className="relative p-8">
+                  <div className={`w-20 h-20 ${value.bgColor} rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-300`}>
+                    <value.icon className={`h-10 w-10 ${value.color}`} />
+                  </div>
+                  <h3 className="text-xl font-bold mb-4 text-center text-foreground">{value.title}</h3>
+                  <p className="text-muted-foreground text-center">{value.description}</p>
+                </CardContent>
+              </Card>
+            ))}
           </div>
         </div>
       </section>
 
-      {/* Story Section */}
-      <section className="py-20 bg-secondary/30">
-        <div className="container mx-auto px-4">
-          <div className="max-w-3xl mx-auto">
-            <h2 className="text-3xl md:text-4xl font-bold mb-8 text-center text-foreground">Our Story</h2>
-            <div className="prose prose-lg mx-auto text-muted-foreground space-y-4">
-              <p>
-                Burg N Ice was born from a simple idea: to create the perfect burger experience right here in Manchester. Our founders, lifelong friends who shared a passion for great food, spent years perfecting their recipes in a small kitchen.
-              </p>
-              <p>
-                What started as weekend pop-ups quickly grew into something special. The response from the Manchester community was overwhelming, and in 2020, we opened our first location on Deansgate.
-              </p>
-              <p>
-                Today, we're proud to serve hundreds of happy customers every week. From our signature burgers to our artisan ice cream, every item on our menu represents our commitment to quality, flavor, and the vibrant Manchester food scene we love.
-              </p>
+      {/* Story Section - Enhanced */}
+      <section className="py-24 bg-gradient-to-b from-secondary/30 to-transparent relative overflow-hidden">
+        <div className="absolute -top-32 -right-32 w-96 h-96 bg-primary/5 rounded-full blur-3xl"></div>
+        <div className="absolute -bottom-32 -left-32 w-96 h-96 bg-secondary/5 rounded-full blur-3xl"></div>
+        
+        <div className="relative container mx-auto px-4">
+          <div className="max-w-4xl mx-auto">
+            <div className="flex flex-col lg:flex-row gap-12 items-center">
+              <div className="lg:w-1/2">
+                <div className="sticky top-24">
+                  <div className="inline-flex items-center gap-3 mb-6">
+                    <div className="w-8 h-px bg-gradient-to-r from-primary to-transparent"></div>
+                    <span className="text-sm font-semibold text-primary tracking-wider uppercase">Our Journey</span>
+                  </div>
+                  <h2 className="text-4xl md:text-5xl font-bold mb-8 text-foreground">
+                    From Passion to{" "}
+                    <span className="bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
+                      Plate
+                    </span>
+                  </h2>
+                </div>
+              </div>
+              
+              <div className="lg:w-1/2 space-y-8">
+                <div className="relative pl-8 border-l-2 border-primary/30">
+                  <div className="absolute -left-[9px] top-0 w-4 h-4 bg-primary rounded-full"></div>
+                  <h3 className="text-xl font-bold mb-3 text-foreground">The Beginning</h3>
+                  <p className="text-muted-foreground">
+                    Burg N Ice started as a dream between two friends passionate about Manchester's food scene. 
+                    What began as weekend pop-ups at local markets quickly gained a loyal following.
+                  </p>
+                </div>
+                
+                <div className="relative pl-8 border-l-2 border-primary/30">
+                  <div className="absolute -left-[9px] top-0 w-4 h-4 bg-primary rounded-full"></div>
+                  <h3 className="text-xl font-bold mb-3 text-foreground">First Location</h3>
+                  <p className="text-muted-foreground">
+                    In 2020, we opened our doors on Deansgate. The response was overwhelming, 
+                    proving Manchester was ready for premium burgers and artisanal ice cream.
+                  </p>
+                </div>
+                
+                <div className="relative pl-8 border-l-2 border-primary/30">
+                  <div className="absolute -left-[9px] top-0 w-4 h-4 bg-primary rounded-full"></div>
+                  <h3 className="text-xl font-bold mb-3 text-foreground">Community Growth</h3>
+                  <p className="text-muted-foreground">
+                    We've grown with Manchester, supporting local suppliers and becoming a staple 
+                    in the community. Our commitment to quality has remained unchanged.
+                  </p>
+                </div>
+                
+                <div className="relative pl-8 border-l-2 border-primary/30">
+                  <div className="absolute -left-[9px] top-0 w-4 h-4 bg-primary rounded-full"></div>
+                  <h3 className="text-xl font-bold mb-3 text-foreground">Looking Ahead</h3>
+                  <p className="text-muted-foreground">
+                    Today, we continue to innovate while staying true to our roots. Every day brings 
+                    new opportunities to delight our customers with exceptional food.
+                  </p>
+                </div>
+              </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Contact Section */}
-      <section className="py-20">
+      {/* Contact Section - Enhanced (Without Map) */}
+      <section className="py-24 relative">
         <div className="container mx-auto px-4">
-          <h2 className="text-3xl md:text-4xl font-bold mb-12 text-center text-foreground">Visit Us</h2>
-          <div className="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8">
-            <Card className="transition-all duration-300 hover:shadow-lg">
-              <CardContent className="p-8">
-                <h3 className="text-xl font-bold mb-6 text-foreground">Location & Hours</h3>
-                <div className="space-y-4">
-                  <div className="flex items-start space-x-3">
-                    <MapPin className="h-5 w-5 text-primary mt-1" />
-                    <div>
-                      <p className="font-medium">Address</p>
-                      <p className="text-muted-foreground">123 Deansgate<br />Manchester M3 2BQ<br />United Kingdom</p>
-                    </div>
-                  </div>
-                  <div className="flex items-start space-x-3">
-                    <Clock className="h-5 w-5 text-primary mt-1" />
-                    <div>
-                      <p className="font-medium">Opening Hours</p>
-                      <p className="text-muted-foreground">
-                        Mon-Thu: 11:00 AM - 10:00 PM<br />
-                        Fri-Sat: 11:00 AM - 11:00 PM<br />
-                        Sunday: 12:00 PM - 9:00 PM
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="transition-all duration-300 hover:shadow-lg">
-              <CardContent className="p-8">
-                <h3 className="text-xl font-bold mb-6 text-foreground">Get in Touch</h3>
-                <div className="space-y-4">
-                  <div className="flex items-center space-x-3">
-                    <Phone className="h-5 w-5 text-primary" />
-                    <div>
-                      <p className="font-medium">Phone</p>
-                      <a href="tel:+441612345678" className="text-muted-foreground hover:text-primary transition-colors">
-                        +44 161 234 5678
-                      </a>
-                    </div>
-                  </div>
-                  <div className="flex items-center space-x-3">
-                    <Mail className="h-5 w-5 text-primary" />
-                    <div>
-                      <p className="font-medium">Email</p>
-                      <a href="mailto:hello@burgnice.co.uk" className="text-muted-foreground hover:text-primary transition-colors">
-                        hello@burgnice.co.uk
-                      </a>
-                    </div>
-                  </div>
-                  <div className="pt-4">
-                    <p className="text-sm text-muted-foreground">
-                      Have questions or want to place a large order? Give us a call or send us an email. We'd love to hear from you!
-                    </p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Map placeholder */}
-          {/* <div className="mt-12 max-w-4xl mx-auto">
-            <div className="aspect-video bg-accent rounded-2xl shadow-lg overflow-hidden">
-              <iframe
-                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2374.4461!2d-2.2481!3d53.4803!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x487bb1bc96a0a0a5%3A0x0!2sDeansgate%2C%20Manchester!5e0!3m2!1sen!2suk!4v1234567890"
-                width="100%"
-                height="100%"
-                style={{ border: 0 }}
-                allowFullScreen
-                loading="lazy"
-                referrerPolicy="no-referrer-when-downgrade"
-                title="Burg N Ice Location"
-              />
+          <div className="max-w-6xl mx-auto">
+            <div className="text-center mb-16">
+              <div className="inline-flex items-center gap-3 mb-6">
+                <div className="w-12 h-px bg-gradient-to-r from-transparent via-primary to-transparent"></div>
+                <span className="text-sm font-semibold text-primary tracking-wider uppercase">Visit Us</span>
+                <div className="w-12 h-px bg-gradient-to-r from-transparent via-primary to-transparent"></div>
+              </div>
+              <h2 className="text-4xl md:text-5xl font-bold mb-6 text-foreground">
+                Experience{" "}
+                <span className="bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
+                  Manchester's Finest
+                </span>
+              </h2>
+              <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+                Find us at our Deansgate location - complete with parking, accessibility, and outdoor seating
+              </p>
             </div>
-          </div> */}
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+              <Card className="border-0 bg-gradient-to-br from-background to-secondary/10 shadow-2xl overflow-hidden">
+                <CardContent className="p-0">
+                  <div className="p-12">
+                    <div className="flex items-center gap-3 mb-8">
+                      <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
+                        <MapPin className="h-6 w-6 text-primary" />
+                      </div>
+                      <div>
+                        <h3 className="text-2xl font-bold text-foreground">Our Flagship Location</h3>
+                        <p className="text-muted-foreground">Heart of Manchester</p>
+                      </div>
+                    </div>
+                    
+                    <div className="space-y-6">
+                      <div>
+                        <h4 className="font-semibold text-foreground mb-2">Address</h4>
+                        <p className="text-muted-foreground text-lg">
+                          123 Deansgate<br />
+                          Manchester M3 2BQ<br />
+                          United Kingdom
+                        </p>
+                      </div>
+                      
+                      <div>
+                        <h4 className="font-semibold text-foreground mb-2">Opening Hours</h4>
+                        <div className="space-y-2">
+                          {[
+                            { days: "Monday - Thursday", hours: "11:00 AM - 10:00 PM" },
+                            { days: "Friday - Saturday", hours: "11:00 AM - 11:00 PM" },
+                            { days: "Sunday", hours: "12:00 PM - 9:00 PM" }
+                          ].map((schedule, idx) => (
+                            <div key={idx} className="flex justify-between items-center py-2 border-b border-border/50">
+                              <span className="text-muted-foreground">{schedule.days}</span>
+                              <span className="font-medium text-foreground">{schedule.hours}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                      
+                      <div className="pt-6 border-t border-border">
+                        <h4 className="font-semibold text-foreground mb-3">Amenities</h4>
+                        <div className="flex flex-wrap gap-3">
+                          {['Parking Available', 'Wheelchair Accessible', 'Outdoor Seating', 'Free WiFi', 'Family Friendly', 'Takeaway'].map((amenity, idx) => (
+                            <span 
+                              key={idx} 
+                              className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full bg-primary/10 text-primary text-sm font-medium"
+                            >
+                              <div className="w-1.5 h-1.5 bg-primary rounded-full"></div>
+                              {amenity}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="border-0 bg-gradient-to-br from-background to-accent/10 shadow-2xl overflow-hidden">
+                <CardContent className="p-0">
+                  <div className="p-12">
+                    <div className="flex items-center gap-3 mb-8">
+                      <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
+                        <Phone className="h-6 w-6 text-primary" />
+                      </div>
+                      <div>
+                        <h3 className="text-2xl font-bold text-foreground">Get In Touch</h3>
+                        <p className="text-muted-foreground">We'd love to hear from you</p>
+                      </div>
+                    </div>
+                    
+                    <div className="space-y-8">
+                      <div>
+                        <h4 className="font-semibold text-foreground mb-4">Contact Information</h4>
+                        <div className="space-y-4">
+                          <a 
+                            href="tel:+441612345678" 
+                            className="flex items-center gap-4 p-4 rounded-xl bg-gradient-to-r from-background to-accent/5 border border-accent/10 hover:border-accent/30 transition-all duration-300 group"
+                          >
+                            <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center group-hover:scale-110 transition-transform">
+                              <Phone className="h-5 w-5 text-primary" />
+                            </div>
+                            <div className="flex-1">
+                              <div className="font-medium text-foreground">Phone</div>
+                              <div className="text-muted-foreground group-hover:text-primary transition-colors">
+                                +44 161 234 5678
+                              </div>
+                            </div>
+                          </a>
+                          
+                          <a 
+                            href="mailto:hello@burgnice.co.uk" 
+                            className="flex items-center gap-4 p-4 rounded-xl bg-gradient-to-r from-background to-accent/5 border border-accent/10 hover:border-accent/30 transition-all duration-300 group"
+                          >
+                            <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center group-hover:scale-110 transition-transform">
+                              <Mail className="h-5 w-5 text-primary" />
+                            </div>
+                            <div className="flex-1">
+                              <div className="font-medium text-foreground">Email</div>
+                              <div className="text-muted-foreground group-hover:text-primary transition-colors">
+                                hello@burgnice.co.uk
+                              </div>
+                            </div>
+                          </a>
+                        </div>
+                      </div>
+                      
+                      <div className="pt-8 border-t border-border">
+                        <h4 className="font-semibold text-foreground mb-4">Special Requests</h4>
+                        <p className="text-muted-foreground">
+                          Planning a large event, corporate catering, or have special dietary requirements? 
+                          Contact us directly and we'll create a custom solution just for you.
+                        </p>
+                        <div className="mt-4 flex items-center gap-2 text-sm text-muted-foreground">
+                          <Truck className="h-4 w-4 text-primary" />
+                          <span>Catering available for events of 20+ people</span>
+                        </div>
+                      </div>
+                      
+                      <div className="pt-8 border-t border-border">
+                        <h4 className="font-semibold text-foreground mb-4">Transport Links</h4>
+                        <div className="grid grid-cols-2 gap-3">
+                          {[
+                            { name: 'Deansgate Tram', distance: '2 min walk' },
+                            { name: 'Deansgate Train', distance: '5 min walk' },
+                            { name: 'Bus Stops', distance: 'Multiple nearby' },
+                            { name: 'Parking', distance: 'NCP 3 min walk' }
+                          ].map((transport, idx) => (
+                            <div key={idx} className="p-3 rounded-lg bg-secondary/10">
+                              <div className="font-medium text-foreground">{transport.name}</div>
+                              <div className="text-sm text-muted-foreground">{transport.distance}</div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+            
+            {/* Call to Action */}
+            <div className="mt-16 text-center">
+              <p className="text-lg text-muted-foreground mb-6">
+                Can't make it in person? Check out our full menu online and get delivery straight to your door!
+              </p>
+              <a 
+                href="/menu" 
+                className="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-primary to-primary/80 text-primary-foreground rounded-full font-semibold text-lg hover:shadow-xl hover:scale-105 transition-all duration-300 shadow-lg"
+              >
+                <span>Order Online Now</span>
+                <span className="animate-bounce">→</span>
+              </a>
+            </div>
+          </div>
         </div>
       </section>
     </div>

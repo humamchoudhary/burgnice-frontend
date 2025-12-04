@@ -96,7 +96,13 @@ export const Footer = () => {
             </div>
           </div>
         </div>
-
+    <div className="text-center my-8">
+  <h3 className="text-2xl font-bold mb-4 text-foreground">Find Us in Manchester</h3>
+  <p className="text-muted-foreground max-w-2xl mx-auto">
+    Located in the heart of Deansgate, easily accessible by tram, train, and bus. 
+    Free parking available at the NCP just 3 minutes away.
+  </p>
+</div>
         {/* Map Section */}
         <div className="mt-12 rounded-lg overflow-hidden shadow-lg">
           <iframe

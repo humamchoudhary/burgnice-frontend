@@ -338,7 +338,12 @@ export const orderAPI = {
 
 // Auth API
 export const authAPI = {
-  login: async (email: string, password: string): Promise<{ token: string; user: any }> => {
+  login: async (email: string, password: string): Promise<{ 
+    token: string; 
+    user: any;
+    cart?: any[]; // Make these optional
+    sessionCartSynced?: boolean;
+  }> => {
     const response = await api.post('/auth/login', { email, password });
     return response.data;
   },
