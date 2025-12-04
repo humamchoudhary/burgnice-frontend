@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Star, ChevronLeft, ChevronRight, Quote, Sparkles } from "lucide-react";
+import { Star, ChevronLeft, ChevronRight, Sparkles } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -182,7 +182,6 @@ export const TestimonialCarousel = () => {
                 <Card className="h-full group border-0 bg-gradient-to-b from-background to-accent/5 hover:to-primary/5 transition-all duration-500 hover:shadow-2xl hover:-translate-y-2">
                   <CardContent className="p-6 md:p-8">
                     <div className="relative">
-                      <Quote className="absolute -top-2 -left-2 h-8 w-8 text-primary/20 group-hover:text-primary/30 transition-colors" />
                       
                       {/* Customer Info */}
                       <div className="flex items-start gap-3 mb-4">
@@ -251,7 +250,7 @@ export const TestimonialCarousel = () => {
               <Button
                 variant="outline"
                 size="icon"
-                className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 lg:-translate-x-6 rounded-full shadow-2xl bg-background/95 backdrop-blur-sm border-2 hover:bg-primary hover:text-primary-foreground hover:scale-110 hover:shadow-primary/30 transition-all duration-300 group"
+                className="absolute left-0 top-1/4 -translate-y-1/2 -translate-x-4 lg:-translate-x-6 rounded-full shadow-2xl bg-background/95 backdrop-blur-sm border-2 hover:bg-primary hover:text-primary-foreground hover:scale-110 hover:shadow-primary/30 transition-all duration-300 group"
                 onClick={prevSlide}
               >
                 <ChevronLeft className="h-5 w-5 group-hover:-translate-x-0.5 transition-transform" />
@@ -260,7 +259,7 @@ export const TestimonialCarousel = () => {
               <Button
                 variant="outline"
                 size="icon"
-                className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 lg:translate-x-6 rounded-full shadow-2xl bg-background/95 backdrop-blur-sm border-2 hover:bg-primary hover:text-primary-foreground hover:scale-110 hover:shadow-primary/30 transition-all duration-300 group"
+                className="absolute right-0 top-1/4 -translate-y-1/2 translate-x-4 lg:translate-x-6 rounded-full shadow-2xl bg-background/95 backdrop-blur-sm border-2 hover:bg-primary hover:text-primary-foreground hover:scale-110 hover:shadow-primary/30 transition-all duration-300 group"
                 onClick={nextSlide}
               >
                 <ChevronRight className="h-5 w-5 group-hover:translate-x-0.5 transition-transform" />
