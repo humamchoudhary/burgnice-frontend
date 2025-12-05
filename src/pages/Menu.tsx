@@ -17,12 +17,16 @@ export const Menu = ({ onAddToCart }: MenuProps) => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [activeTab, setActiveTab] = useState<string>("all");
   const [menuItems, setMenuItems] = useState<MenuItemType[]>([]);
-  const [categories, setCategories] = useState<{ _id: string; name: string; slug: string }[]>([]);
+  const [categories, setCategories] = useState<
+    { _id: string; name: string; slug: string }[]
+  >([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedItem, setSelectedItem] = useState<MenuItemType | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
-  const [priceFilter, setPriceFilter] = useState<"all" | "under10" | "under20" | "over20">("all");
+  const [priceFilter, setPriceFilter] = useState<
+    "all" | "under10" | "under20" | "over20"
+  >("all");
 
   // Fetch categories and menu items from backend
   useEffect(() => {
@@ -42,13 +46,18 @@ export const Menu = ({ onAddToCart }: MenuProps) => {
           slug: cat.name.toLowerCase().replace(/\s+/g, ""),
         }));
 
+        console.log();
+
         const convertedItems = menuData.map((item) => ({
           id: item._id,
           name: item.name,
           description: item.description,
           price: item.price,
-          image: item.image || '/placeholder-image.jpg',
-          category: typeof item.category === 'string' ? item.category : item.category.name,
+          image: item.image,
+          category:
+            typeof item.category === "string"
+              ? item.category
+              : item.category.name,
         }));
 
         setCategories(mappedCategories);
@@ -106,15 +115,17 @@ export const Menu = ({ onAddToCart }: MenuProps) => {
   // Filter items based on active tab, search query, and price filter
   const filteredItems = menuItems.filter((item) => {
     // Category filter
-    const categoryMatch = activeTab === "all" || 
+    const categoryMatch =
+      activeTab === "all" ||
       item.category.toLowerCase().replace(/\s+/g, "") === activeTab;
-    
+
     // Search filter
-    const searchMatch = searchQuery === "" || 
+    const searchMatch =
+      searchQuery === "" ||
       item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       item.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
       item.category.toLowerCase().includes(searchQuery.toLowerCase());
-    
+
     // Price filter
     let priceMatch = true;
     switch (priceFilter) {
@@ -128,7 +139,7 @@ export const Menu = ({ onAddToCart }: MenuProps) => {
         priceMatch = item.price >= 20;
         break;
     }
-    
+
     return categoryMatch && searchMatch && priceMatch;
   });
 
@@ -148,8 +159,12 @@ export const Menu = ({ onAddToCart }: MenuProps) => {
             <Sparkles className="h-16 w-16 text-primary mx-auto mb-4 animate-pulse" />
           </div>
           <div>
-            <h2 className="text-2xl font-bold text-foreground mb-2">Crafting Your Menu</h2>
-            <p className="text-muted-foreground">Loading delicious options...</p>
+            <h2 className="text-2xl font-bold text-foreground mb-2">
+              Crafting Your Menu
+            </h2>
+            <p className="text-muted-foreground">
+              Loading delicious options...
+            </p>
           </div>
         </div>
       </div>
@@ -163,7 +178,9 @@ export const Menu = ({ onAddToCart }: MenuProps) => {
           <div className="w-16 h-16 bg-destructive/10 rounded-full flex items-center justify-center mx-auto mb-6">
             <Filter className="h-8 w-8 text-destructive" />
           </div>
-          <h2 className="text-2xl font-bold text-foreground mb-3">Menu Unavailable</h2>
+          <h2 className="text-2xl font-bold text-foreground mb-3">
+            Menu Unavailable
+          </h2>
           <p className="text-muted-foreground mb-6">{error}</p>
           <Button
             onClick={() => window.location.reload()}
@@ -185,22 +202,25 @@ export const Menu = ({ onAddToCart }: MenuProps) => {
         <div className="absolute inset-0 opacity-10">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_80%,rgba(120,119,198,0.3),transparent_40%),radial-gradient(circle_at_80%_20%,rgba(251,146,60,0.3),transparent_40%)]"></div>
         </div>
-        
+
         <div className="relative container mx-auto px-4">
           <div className="max-w-3xl mx-auto text-center">
             <div className="inline-flex items-center gap-2 mb-6 px-4 py-2 rounded-full bg-gradient-to-r from-primary/10 via-primary/5 to-primary/10 border border-primary/30">
               <Sparkles className="h-4 w-4 text-primary" />
-              <span className="text-sm font-medium text-primary">Manchester's Finest</span>
+              <span className="text-sm font-medium text-primary">
+                Manchester's Finest
+              </span>
             </div>
-            
+
             <h1 className="text-5xl md:text-6xl lg:text-7xl font-black mb-6 leading-tight bg-gradient-to-b from-foreground to-foreground/80 bg-clip-text text-transparent">
               OUR MENU
             </h1>
-            
+
             <p className="text-xl md:text-2xl text-muted-foreground max-w-2xl mx-auto mb-10 leading-relaxed">
-              Handcrafted perfection in every bite. Explore our signature burgers, premium sides, artisan ice cream, and refreshing drinks.
+              Handcrafted perfection in every bite. Explore our signature
+              burgers, premium sides, artisan ice cream, and refreshing drinks.
             </p>
-            
+
             {/* Search and Filter Bar */}
             <div className="max-w-4xl mx-auto space-y-4 mb-12">
               <div className="relative">
@@ -213,7 +233,7 @@ export const Menu = ({ onAddToCart }: MenuProps) => {
                   onChange={(e) => setSearchQuery(e.target.value)}
                 />
               </div>
-              
+
               {/* Price Filter */}
               <div className="flex flex-wrap gap-3 justify-center">
                 <span className="text-sm font-medium text-muted-foreground flex items-center">
@@ -228,7 +248,9 @@ export const Menu = ({ onAddToCart }: MenuProps) => {
                 ].map((filter) => (
                   <Badge
                     key={filter.value}
-                    variant={priceFilter === filter.value ? "default" : "outline"}
+                    variant={
+                      priceFilter === filter.value ? "default" : "outline"
+                    }
                     className="px-4 py-2 rounded-full cursor-pointer transition-all hover:scale-105"
                     onClick={() => setPriceFilter(filter.value as any)}
                   >
@@ -263,11 +285,15 @@ export const Menu = ({ onAddToCart }: MenuProps) => {
                     </TabsTrigger>
                   ))}
                 </TabsList>
-                
+
                 {/* Results Counter */}
                 <div className="flex items-center justify-between text-sm text-muted-foreground px-2">
                   <span>
-                    Showing <span className="font-bold text-foreground">{filteredItems.length}</span> of {menuItems.length} items
+                    Showing{" "}
+                    <span className="font-bold text-foreground">
+                      {filteredItems.length}
+                    </span>{" "}
+                    of {menuItems.length} items
                   </span>
                   {searchQuery && (
                     <span className="flex items-center gap-2">
@@ -286,9 +312,11 @@ export const Menu = ({ onAddToCart }: MenuProps) => {
                     <div className="w-24 h-24 bg-gradient-to-br from-secondary/20 to-accent/20 rounded-full flex items-center justify-center mx-auto mb-6">
                       <Search className="h-10 w-10 text-muted-foreground" />
                     </div>
-                    <h3 className="text-2xl font-bold text-foreground mb-3">No Items Found</h3>
+                    <h3 className="text-2xl font-bold text-foreground mb-3">
+                      No Items Found
+                    </h3>
                     <p className="text-muted-foreground mb-8">
-                      {searchQuery 
+                      {searchQuery
                         ? `No items match "${searchQuery}" in ${activeTab === "all" ? "all categories" : activeTab}. Try a different search.`
                         : `No items available in ${activeTab === "all" ? "all categories" : activeTab}.`}
                     </p>
@@ -335,25 +363,34 @@ export const Menu = ({ onAddToCart }: MenuProps) => {
             <div className="max-w-4xl mx-auto text-center mb-12">
               <div className="inline-flex items-center gap-3 mb-6">
                 <div className="w-8 h-px bg-gradient-to-r from-transparent via-primary to-transparent"></div>
-                <span className="text-sm font-semibold text-primary tracking-wider uppercase">Must Try</span>
+                <span className="text-sm font-semibold text-primary tracking-wider uppercase">
+                  Must Try
+                </span>
                 <div className="w-8 h-px bg-gradient-to-r from-transparent via-primary to-transparent"></div>
               </div>
               <h2 className="text-3xl md:text-4xl font-bold mb-4 text-foreground">
-                Customer <span className="bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">Favorites</span>
+                Customer{" "}
+                <span className="bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
+                  Favorites
+                </span>
               </h2>
               <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
                 These are the dishes our customers keep coming back for
               </p>
             </div>
-            
+
             {/* Show top 4 items by category */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               {menuItems
-                .filter(item => ["burgers", "icecream"].includes(item.category.toLowerCase().replace(/\s+/g, "")))
+                .filter((item) =>
+                  ["burgers", "icecream"].includes(
+                    item.category.toLowerCase().replace(/\s+/g, ""),
+                  ),
+                )
                 .slice(0, 4)
                 .map((item, index) => (
-                  <div 
-                    key={item.id} 
+                  <div
+                    key={item.id}
                     className="relative group animate-fade-in-up"
                     style={{ animationDelay: `${index * 100}ms` }}
                   >
@@ -384,7 +421,10 @@ export const Menu = ({ onAddToCart }: MenuProps) => {
         <div className="relative container mx-auto px-4">
           <div className="max-w-3xl mx-auto text-center bg-gradient-to-br from-background to-accent/5 rounded-3xl p-12 border border-accent/20 shadow-2xl">
             <h2 className="text-3xl md:text-4xl font-bold mb-6 text-foreground">
-              Hungry for <span className="bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">More?</span>
+              Hungry for{" "}
+              <span className="bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
+                More?
+              </span>
             </h2>
             <p className="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto">
               Can't decide? Order our Burger & Ice Cream Combo and save 15%!
@@ -394,8 +434,12 @@ export const Menu = ({ onAddToCart }: MenuProps) => {
               className="rounded-full px-12 py-6 text-lg bg-gradient-to-r from-primary to-primary/80 hover:from-primary hover:to-primary shadow-xl hover:shadow-primary/50 transition-all duration-300 hover:scale-105 font-semibold group"
               onClick={() => {
                 // Find combo items or trigger special offer
-                const burger = menuItems.find(item => item.category.toLowerCase().includes('burger'));
-                const icecream = menuItems.find(item => item.category.toLowerCase().includes('ice'));
+                const burger = menuItems.find((item) =>
+                  item.category.toLowerCase().includes("burger"),
+                );
+                const icecream = menuItems.find((item) =>
+                  item.category.toLowerCase().includes("ice"),
+                );
                 if (burger && icecream) {
                   handleAddToCart(burger);
                   handleAddToCart(icecream);
@@ -408,7 +452,8 @@ export const Menu = ({ onAddToCart }: MenuProps) => {
               </span>
             </Button>
             <p className="text-sm text-muted-foreground mt-6">
-              <span className="line-through">£24.98</span> → <span className="text-primary font-bold">£21.23</span> (Save 15%)
+              <span className="line-through">£24.98</span> →{" "}
+              <span className="text-primary font-bold">£21.23</span> (Save 15%)
             </p>
           </div>
         </div>

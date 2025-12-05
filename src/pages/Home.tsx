@@ -11,20 +11,19 @@ import { MenuItemType } from "@/components/MenuItem";
 import { categoryAPI, menuItemAPI } from "@/services/api";
 import { Loader2, Sparkles } from "lucide-react";
 import heroImage from "@/assets/hero-burger.jpg";
-import burgersImage from "@/assets/category-burgers.jpg";
-import friesImage from "@/assets/category-fries.jpg";
-import icecreamImage from "@/assets/category-icecream.jpg";
-import drinksImage from "@/assets/category-drinks.jpg";
+import maybeamilkshakeImage from "@/assets/category-maybeamilkshake.jpeg";
+import burgerImage from "@/assets/category-burgers.jpeg";
+import smashBurgerImage from "@/assets/category-smashedburgers.jpeg";
+import boxitoffImage from "@/assets/category-boxitoff.jpeg";
+import sideImage from "@/assets/category-sides.jpeg";
 
 // Fallback images for categories
 const categoryImages: { [key: string]: string } = {
-  burgers: burgersImage,
-  fries: friesImage,
-  icecream: icecreamImage,
-  ice: icecreamImage,
-  drinks: drinksImage,
-  beverage: drinksImage,
-  beverages: drinksImage,
+  maybeamilkshake: maybeamilkshakeImage,
+  smashedburgers: smashBurgerImage,
+  burgers: burgerImage,
+  boxitoff: boxitoffImage,
+  sides: sideImage,
 };
 
 interface HomeProps {
@@ -33,7 +32,9 @@ interface HomeProps {
 
 export const Home = ({ onAddToCart }: HomeProps) => {
   const handleAddToCart = onAddToCart || (() => {});
-  const [categories, setCategories] = useState<Array<{ title: string; image: string; link: string }>>([]);
+  const [categories, setCategories] = useState<
+    Array<{ title: string; image: string; link: string }>
+  >([]);
   const [featuredItems, setFeaturedItems] = useState<MenuItemType[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -47,43 +48,57 @@ export const Home = ({ onAddToCart }: HomeProps) => {
         // Fetch categories and menu items
         const [categoriesData, menuData] = await Promise.all([
           categoryAPI.getAll(),
-          menuItemAPI.getAll()
+          menuItemAPI.getAll(),
         ]);
 
         // Map categories with fallback images
-        const mappedCategories = categoriesData.map(cat => {
-          const slug = cat.name.toLowerCase().replace(/\s+/g, '');
-          const image = categoryImages[slug] || burgersImage;
-          
+        const mappedCategories = categoriesData.map((cat) => {
+          const slug = cat.name.toLowerCase().replace(/\s+/g, "");
+          const image = categoryImages[slug] || burgerImage;
+
           return {
             title: cat.name,
             image: image,
-            link: `/menu?category=${slug}`
+            link: `/menu?category=${slug}`,
           };
         });
 
         // Convert menu items to MenuItemType
-        const convertedItems = menuData.slice(0, 4).map(item => ({
+        const convertedItems = menuData.slice(0, 4).map((item) => ({
           id: item._id,
           name: item.name,
           description: item.description,
           price: item.price,
-          image: item.image || '/placeholder-image.jpg',
-          category: typeof item.category === 'string' ? item.category : item.category.name,
+          image: item.image || "/placeholder-image.jpg",
+          category:
+            typeof item.category === "string"
+              ? item.category
+              : item.category.name,
         }));
-
+        console.log(convertedItems);
         setCategories(mappedCategories);
         setFeaturedItems(convertedItems);
       } catch (err) {
-        console.error('Error fetching home data:', err);
-        setError('Failed to load data. Using fallback content.');
-        
+        console.error("Error fetching home data:", err);
+        setError("Failed to load data. Using fallback content.");
+
         // Fallback categories if API fails
         setCategories([
-          { title: "Burgers", image: burgersImage, link: "/menu?category=burgers" },
-          { title: "Fries", image: friesImage, link: "/menu?category=fries" },
-          { title: "Ice Cream", image: icecreamImage, link: "/menu?category=icecream" },
-          { title: "Drinks", image: drinksImage, link: "/menu?category=drinks" },
+          {
+            title: "Burgers",
+            image: smashBurgerImage,
+            link: "/menu?category=burgers",
+          },
+          {
+            title: "Ice Cream",
+            image: maybeamilkshakeImage,
+            link: "/menu?category=icecream",
+          },
+          {
+            title: "Drinks",
+            image: sideImage,
+            link: "/menu?category=drinks",
+          },
         ]);
       } finally {
         setLoading(false);
@@ -104,7 +119,9 @@ export const Home = ({ onAddToCart }: HomeProps) => {
             <Sparkles className="h-12 w-12 text-primary mx-auto mb-4 animate-pulse" />
           </div>
           <div>
-            <h2 className="text-xl font-semibold text-foreground">Preparing Your Experience</h2>
+            <h2 className="text-xl font-semibold text-foreground">
+              Preparing Your Experience
+            </h2>
             <p className="text-muted-foreground mt-2">Loading Burg N Ice...</p>
           </div>
         </div>
@@ -128,35 +145,58 @@ export const Home = ({ onAddToCart }: HomeProps) => {
           <div className="absolute inset-0 bg-gradient-to-t from-background via-background/70 to-transparent" />
           <div className="absolute inset-0 bg-gradient-to-r from-background/30 via-transparent to-background/30" />
         </div>
-        
+
         {/* Floating decorative elements */}
         <div className="absolute top-20 left-10 w-24 h-24 bg-primary/10 rounded-full blur-xl animate-float"></div>
-        <div className="absolute bottom-32 right-16 w-32 h-32 bg-secondary/20 rounded-full blur-xl animate-float" style={{ animationDelay: '1s' }}></div>
-        
+        <div
+          className="absolute bottom-32 right-16 w-32 h-32 bg-secondary/20 rounded-full blur-xl animate-float"
+          style={{ animationDelay: "1s" }}
+        ></div>
+
         <div className="relative z-10 container mx-auto px-4 h-full flex items-center justify-center">
           <div className="max-w-5xl text-center animate-fade-in-up">
             <div className="inline-flex items-center gap-2 mb-6 px-6 py-3 rounded-full bg-gradient-to-r from-primary/10 via-primary/5 to-primary/10 border border-primary/30 backdrop-blur-sm">
               <Sparkles className="h-4 w-4 text-primary" />
-              <span className="text-sm font-medium text-primary">Manchester's Favourite Since 2020</span>
+              <span className="text-sm font-medium text-primary">
+                Manchester's Favourite Since 2020
+              </span>
             </div>
-            
+
             <h1 className="text-6xl md:text-7xl lg:text-8xl font-black mb-6 leading-tight tracking-tight bg-gradient-to-b from-foreground to-foreground/80 bg-clip-text text-transparent">
               BURG N ICE
             </h1>
-            
-            <p className="text-3xl md:text-4xl font-bold mb-4 text-foreground animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
-              <span className="bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">Artisan Burgers</span>
+
+            <p
+              className="text-3xl md:text-4xl font-bold mb-4 text-foreground animate-fade-in-up"
+              style={{ animationDelay: "0.2s" }}
+            >
+              <span className="bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
+                Artisan Burgers
+              </span>
               <span className="mx-4">•</span>
-              <span className="bg-gradient-to-r from-secondary to-secondary/70 bg-clip-text text-transparent">Handcrafted Ice Cream</span>
+              <span className="bg-gradient-to-r from-secondary to-secondary/70 bg-clip-text text-transparent">
+                Handcrafted Ice Cream
+              </span>
             </p>
-            
-            <p className="text-xl md:text-2xl text-muted-foreground mb-12 max-w-3xl mx-auto leading-relaxed animate-fade-in-up" style={{ animationDelay: '0.4s' }}>
-              Where quality meets creativity. Experience Manchester's finest handcrafted burgers and premium artisan ice cream made with locally-sourced ingredients.
+
+            <p
+              className="text-xl md:text-2xl text-muted-foreground mb-12 max-w-3xl mx-auto leading-relaxed animate-fade-in-up"
+              style={{ animationDelay: "0.4s" }}
+            >
+              Where quality meets creativity. Experience Manchester's finest
+              handcrafted burgers and premium artisan ice cream made with
+              locally-sourced ingredients.
             </p>
-            
-            <div className="flex flex-wrap gap-6 justify-center animate-fade-in-up" style={{ animationDelay: '0.6s' }}>
+
+            <div
+              className="flex flex-wrap gap-6 justify-center animate-fade-in-up"
+              style={{ animationDelay: "0.6s" }}
+            >
               <Link to="/menu">
-                <Button size="lg" className="group text-lg h-16 px-12 rounded-full bg-gradient-to-r from-primary to-primary/80 hover:from-primary hover:to-primary shadow-2xl hover:shadow-primary/50 transition-all duration-300 hover:scale-105 font-semibold">
+                <Button
+                  size="lg"
+                  className="group text-lg h-16 px-12 rounded-full bg-gradient-to-r from-primary to-primary/80 hover:from-primary hover:to-primary shadow-2xl hover:shadow-primary/50 transition-all duration-300 hover:scale-105 font-semibold"
+                >
                   <span className="flex items-center gap-2">
                     Order Now
                     <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
@@ -164,12 +204,16 @@ export const Home = ({ onAddToCart }: HomeProps) => {
                 </Button>
               </Link>
               <Link to="/about">
-                <Button variant="outline" size="lg" className="text-lg h-16 px-12 rounded-full border-2 hover:bg-accent/50 hover:border-accent transition-all duration-300 font-semibold backdrop-blur-sm">
+                <Button
+                  variant="outline"
+                  size="lg"
+                  className="text-lg h-16 px-12 rounded-full border-2 hover:bg-accent/50 hover:border-accent transition-all duration-300 font-semibold backdrop-blur-sm"
+                >
                   Discover Our Story
                 </Button>
               </Link>
             </div>
-            
+
             <div className="mt-16 flex items-center justify-center gap-8 text-sm text-muted-foreground">
               <div className="flex items-center gap-2">
                 <div className="w-2 h-2 bg-primary rounded-full animate-pulse"></div>
@@ -177,12 +221,18 @@ export const Home = ({ onAddToCart }: HomeProps) => {
               </div>
               <div className="hidden md:block">•</div>
               <div className="flex items-center gap-2">
-                <div className="w-2 h-2 bg-secondary rounded-full animate-pulse" style={{ animationDelay: '0.5s' }}></div>
+                <div
+                  className="w-2 h-2 bg-secondary rounded-full animate-pulse"
+                  style={{ animationDelay: "0.5s" }}
+                ></div>
                 <span>Locally Sourced</span>
               </div>
               <div className="hidden md:block">•</div>
               <div className="flex items-center gap-2">
-                <div className="w-2 h-2 bg-primary rounded-full animate-pulse" style={{ animationDelay: '1s' }}></div>
+                <div
+                  className="w-2 h-2 bg-primary rounded-full animate-pulse"
+                  style={{ animationDelay: "1s" }}
+                ></div>
                 <span>Free Delivery Over £15</span>
               </div>
             </div>
@@ -197,39 +247,48 @@ export const Home = ({ onAddToCart }: HomeProps) => {
       <section className="py-24 relative overflow-hidden scroll-fade-in">
         <div className="absolute -top-24 -left-24 w-96 h-96 bg-primary/5 rounded-full blur-3xl"></div>
         <div className="absolute -bottom-24 -right-24 w-96 h-96 bg-secondary/5 rounded-full blur-3xl"></div>
-        
+
         <div className="relative container mx-auto px-4">
           <div className="max-w-4xl mx-auto text-center">
             <div className="inline-flex items-center gap-3 mb-6">
               <div className="w-12 h-px bg-gradient-to-r from-transparent via-primary to-transparent"></div>
-              <span className="text-sm font-semibold text-primary tracking-wider uppercase">Our Philosophy</span>
+              <span className="text-sm font-semibold text-primary tracking-wider uppercase">
+                Our Philosophy
+              </span>
               <div className="w-12 h-px bg-gradient-to-r from-transparent via-primary to-transparent"></div>
             </div>
-            
+
             <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-8 text-foreground">
               Crafting Moments of{" "}
               <span className="relative">
-                <span className="relative z-10 bg-gradient-to-r from-primary via-primary/80 to-primary bg-clip-text text-transparent">Joy</span>
+                <span className="relative z-10 bg-gradient-to-r from-primary via-primary/80 to-primary bg-clip-text text-transparent">
+                  Joy
+                </span>
                 <span className="absolute -bottom-2 left-0 right-0 h-3 bg-primary/20 -rotate-1"></span>
               </span>
             </h2>
-            
+
             <div className="prose prose-lg mx-auto text-muted-foreground leading-relaxed space-y-6">
               <p className="text-xl md:text-2xl font-light">
-                Born in the heart of Manchester, Burg N Ice fuses the city's vibrant energy with our passion for culinary excellence.
+                Born in the heart of Manchester, Burg N Ice fuses the city's
+                vibrant energy with our passion for culinary excellence.
               </p>
               <p className="text-lg">
-                We believe every meal should be an experience. That's why we meticulously source ingredients from local suppliers, 
-                handcraft each burger with artisanal techniques, and churn our ice cream daily for maximum freshness. From our 
-                signature Manchester Burger to our seasonal ice cream flavors, every creation tells a story of quality, creativity, 
-                and community connection.
+                We believe every meal should be an experience. That's why we
+                meticulously source ingredients from local suppliers, handcraft
+                each burger with artisanal techniques, and churn our ice cream
+                daily for maximum freshness. From our signature Manchester
+                Burger to our seasonal ice cream flavors, every creation tells a
+                story of quality, creativity, and community connection.
               </p>
             </div>
-            
+
             <div className="mt-12 grid grid-cols-2 md:grid-cols-4 gap-6 max-w-2xl mx-auto">
               <div className="text-center p-4 rounded-2xl bg-gradient-to-b from-background to-accent/5 border border-accent/10">
                 <div className="text-3xl font-bold text-primary mb-2">100%</div>
-                <div className="text-sm text-muted-foreground">Local Ingredients</div>
+                <div className="text-sm text-muted-foreground">
+                  Local Ingredients
+                </div>
               </div>
               <div className="text-center p-4 rounded-2xl bg-gradient-to-b from-background to-accent/5 border border-accent/10">
                 <div className="text-3xl font-bold text-primary mb-2">50+</div>
@@ -237,7 +296,9 @@ export const Home = ({ onAddToCart }: HomeProps) => {
               </div>
               <div className="text-center p-4 rounded-2xl bg-gradient-to-b from-background to-accent/5 border border-accent/10">
                 <div className="text-3xl font-bold text-primary mb-2">4.9★</div>
-                <div className="text-sm text-muted-foreground">Customer Rating</div>
+                <div className="text-sm text-muted-foreground">
+                  Customer Rating
+                </div>
               </div>
               <div className="text-center p-4 rounded-2xl bg-gradient-to-b from-background to-accent/5 border border-accent/10">
                 <div className="text-3xl font-bold text-primary mb-2">24h</div>
@@ -256,33 +317,42 @@ export const Home = ({ onAddToCart }: HomeProps) => {
             <div className="max-w-3xl mx-auto text-center mb-16">
               <div className="inline-flex items-center gap-3 mb-6">
                 <div className="w-8 h-px bg-gradient-to-r from-transparent via-primary to-transparent"></div>
-                <span className="text-sm font-semibold text-primary tracking-wider uppercase">Explore</span>
+                <span className="text-sm font-semibold text-primary tracking-wider uppercase">
+                  Explore
+                </span>
                 <div className="w-8 h-px bg-gradient-to-r from-transparent via-primary to-transparent"></div>
               </div>
               <h2 className="text-4xl md:text-5xl font-bold mb-6 text-foreground">
                 Our Culinary{" "}
-                <span className="bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">Collections</span>
+                <span className="bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
+                  Collections
+                </span>
               </h2>
               <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-                Discover our carefully curated menu categories, each crafted with passion and precision
+                Discover our carefully curated menu categories, each crafted
+                with passion and precision
               </p>
             </div>
-            
+
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
               {categories.map((category, index) => (
-                <div 
-                  key={category.title} 
-                  className="scroll-fade-in group" 
+                <div
+                  key={category.title}
+                  className="scroll-fade-in group"
                   style={{ animationDelay: `${index * 100}ms` }}
                 >
                   <CategoryCard {...category} />
                 </div>
               ))}
             </div>
-            
+
             <div className="text-center mt-12">
               <Link to="/menu">
-                <Button variant="outline" size="lg" className="rounded-full px-8 py-6 text-lg group">
+                <Button
+                  variant="outline"
+                  size="lg"
+                  className="rounded-full px-8 py-6 text-lg group"
+                >
                   <span className="flex items-center gap-2">
                     View Full Menu
                     <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />

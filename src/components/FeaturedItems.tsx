@@ -9,7 +9,11 @@ interface FeaturedItemsProps {
   onAddToCart: (item: MenuItemType) => void;
 }
 
+const UPLOAD_BASE_URL =
+  import.meta.env.VITE_SERVER_BASE_URL || "http://localhost:5000";
+
 export const FeaturedItems = ({ items, onAddToCart }: FeaturedItemsProps) => {
+  console.log(items);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   const scroll = (direction: "left" | "right") => {
@@ -18,7 +22,7 @@ export const FeaturedItems = ({ items, onAddToCart }: FeaturedItemsProps) => {
       const newScrollPosition =
         scrollContainerRef.current.scrollLeft +
         (direction === "left" ? -scrollAmount : scrollAmount);
-      
+
       scrollContainerRef.current.scrollTo({
         left: newScrollPosition,
         behavior: "smooth",
@@ -61,13 +65,15 @@ export const FeaturedItems = ({ items, onAddToCart }: FeaturedItemsProps) => {
               >
                 <div className="aspect-[4/3] overflow-hidden bg-accent">
                   <img
-                    src={item.image}
+                    src={`${UPLOAD_BASE_URL}${item.image}`}
                     alt={item.name}
                     className="w-full h-full object-cover transition-transform duration-700 group-hover/card:scale-110"
                   />
                 </div>
                 <CardContent className="p-6">
-                  <h3 className="text-xl font-bold mb-2 text-foreground">{item.name}</h3>
+                  <h3 className="text-xl font-bold mb-2 text-foreground">
+                    {item.name}
+                  </h3>
                   <p className="text-sm text-muted-foreground mb-4 line-clamp-2">
                     {item.description}
                   </p>
