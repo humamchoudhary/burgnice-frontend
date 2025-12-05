@@ -91,6 +91,68 @@ export interface Order {
   updatedAt?: string;
 }
 
+// Enhanced User Profile Interface
+export interface UserProfile {
+  id: string;
+  username: string;
+  email: string;
+  role: string;
+  loyaltyPoints: number;
+  totalSpent: number;
+  loyaltyPointsUsed: number;
+  createdAt: string;
+  shippingAddress?: {
+    street: string;
+    city: string;
+    postalCode: string;
+    country: string;
+  };
+  phoneNumber?: string;
+  preferences?: {
+    newsletter: boolean;
+    notifications: boolean;
+  };
+  totalOrders: number;
+  joinDate: string;
+  tier: "Bronze" | "Silver" | "Gold";
+  recentOrders?: Array<{
+    orderId: string;
+    total: number;
+    status: string;
+    date: string;
+  }>;
+}
+
+// Enhanced Order with tracking
+export interface OrderWithTracking {
+  _id: string;
+  orderNumber: string;
+  total: number;
+  status: "pending" | "preparing" | "completed" | "cancelled";
+  statusText: string;
+  items: Array<{
+    name: string;
+    quantity: number;
+    price: number;
+  }>;
+  itemCount: number;
+  deliveryAddress: string;
+  contactPhone: string;
+  customerName: string;
+  createdAt: string;
+  estimatedDelivery: {
+    estimated: Date;
+    isDelivered: boolean;
+    timeRemaining?: number;
+    deliveredAt?: Date;
+  };
+  discountApplied: number;
+  loyaltyPointsEarned: number;
+  loyaltyPointsUsed: number;
+  paymentMethod: string;
+  notes?: string;
+}
+
 // Loyalty discount calculation interface
 export interface LoyaltyDiscount {
   eligible: boolean;
@@ -120,6 +182,12 @@ export interface LoyaltySummary {
   message?: string;
 }
 
+// Password change interface
+export interface PasswordChangeData {
+  currentPassword: string;
+  newPassword: string;
+}
+
 // Query parameter interfaces
 export interface QueryParams {
   page?: number;
@@ -141,6 +209,16 @@ export interface OrderQueryParams extends QueryParams {
   user?: string;
   startDate?: string;
   endDate?: string;
+}
+
+// User orders response
+export interface UserOrdersResponse {
+  data: Order[];
+  total: number;
+  page: number;
+  totalPages: number;
+  hasNext: boolean;
+  hasPrev: boolean;
 }
 
 // Response wrapper for paginated data
@@ -375,7 +453,7 @@ export const authAPI = {
   ): Promise<{
     token: string;
     user: any;
-    cart?: any[]; // Make these optional
+    cart?: any[];
     sessionCartSynced?: boolean;
   }> => {
     const response = await api.post("/auth/login", { email, password });
@@ -388,12 +466,17 @@ export const authAPI = {
   },
 
   getProfile: async (): Promise<any> => {
-    const response = await api.get("/auth/profile");
+    const response = await api.get("/user/profile");
     return response.data;
   },
 
   updateProfile: async (userData: any): Promise<any> => {
     const response = await api.put("/auth/profile", userData);
+    return response.data;
+  },
+
+  changePassword: async (passwordData: PasswordChangeData): Promise<{ message: string }> => {
+    const response = await api.put("/auth/change-password", passwordData);
     return response.data;
   },
 
@@ -403,6 +486,75 @@ export const authAPI = {
 
   refreshToken: async (): Promise<{ token: string }> => {
     const response = await api.post("/auth/refresh-token");
+    return response.data;
+  },
+};
+
+// User Profile API
+export const userAPI = {
+  // Get detailed user profile
+  getProfile: async (): Promise<UserProfile> => {
+    const response = await api.get("/user/profile");
+    return response.data;
+  },
+
+  // Get user orders with pagination
+  getOrders: async (params?: {
+    page?: number;
+    limit?: number;
+    status?: string;
+  }): Promise<UserOrdersResponse> => {
+    const response = await api.get("/user/orders", { params });
+    return response.data;
+  },
+
+  // Get specific order details
+  getOrderDetails: async (orderId: string): Promise<OrderWithTracking> => {
+    const response = await api.get(`/user/orders/${orderId}`);
+    return response.data;
+  },
+
+  // Update user profile
+  updateProfile: async (userData: Partial<UserProfile>): Promise<UserProfile> => {
+    const response = await api.put("/auth/profile", userData);
+    return response.data;
+  },
+
+  // Change password
+  changePassword: async (passwordData: PasswordChangeData): Promise<{ message: string }> => {
+    const response = await api.put("/auth/change-password", passwordData);
+    return response.data;
+  },
+
+  // Get order history (legacy endpoint - use getOrders instead)
+  getOrderHistory: async (): Promise<{
+    orders: OrderWithTracking[];
+    totalOrders: number;
+    totalSpent: number;
+    loyaltyPoints: number;
+    recentOrder: OrderWithTracking | null;
+  }> => {
+    const response = await api.get("/orders/history");
+    return response.data;
+  },
+
+  // Get order tracking
+  getOrderTracking: async (orderId: string): Promise<{
+    orderId: string;
+    orderNumber: string;
+    status: string;
+    statusText: string;
+    trackingInfo: any;
+    estimatedDelivery: {
+      estimated: string;
+      isDelivered: boolean;
+      timeRemaining?: number;
+      deliveredAt?: string;
+    };
+    createdAt: string;
+    updatedAt: string;
+  }> => {
+    const response = await api.get(`/orders/${orderId}/tracking`);
     return response.data;
   },
 };
@@ -469,6 +621,36 @@ export const cartAPI = {
       return [];
     }
   },
+
+  // Add item to cart
+  addToCart: async (menuItemId: string, quantity: number = 1, customizations: any = {}): Promise<any> => {
+    const response = await api.post("/cart/add", { menuItemId, quantity, customizations });
+    return response.data;
+  },
+
+  // Update cart item quantity
+  updateCartItem: async (cartItemId: string, quantity: number): Promise<any> => {
+    const response = await api.put("/cart/update", { cartItemId, quantity });
+    return response.data;
+  },
+
+  // Remove item from cart
+  removeFromCart: async (cartItemId: string): Promise<any> => {
+    const response = await api.delete(`/cart/remove/${cartItemId}`);
+    return response.data;
+  },
+
+  // Clear cart
+  clearCart: async (): Promise<any> => {
+    const response = await api.delete("/cart/clear");
+    return response.data;
+  },
+
+  // Get cart count
+  getCartCount: async (): Promise<{ count: number }> => {
+    const response = await api.get("/cart/count");
+    return response.data;
+  },
 };
 
 // Auth utilities
@@ -529,10 +711,52 @@ export const calculateLocalDiscount = (
   };
 };
 
+// Password validation utility
+export const validatePassword = (password: string): {
+  isValid: boolean;
+  requirements: Array<{ met: boolean; text: string }>;
+} => {
+  const minLength = 8;
+  const hasUpperCase = /[A-Z]/.test(password);
+  const hasLowerCase = /[a-z]/.test(password);
+  const hasNumbers = /\d/.test(password);
+  const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(password);
+
+  return {
+    isValid: password.length >= minLength && hasUpperCase && hasLowerCase && hasNumbers && hasSpecialChar,
+    requirements: [
+      { met: password.length >= minLength, text: "At least 8 characters" },
+      { met: hasUpperCase, text: "One uppercase letter" },
+      { met: hasLowerCase, text: "One lowercase letter" },
+      { met: hasNumbers, text: "One number" },
+      { met: hasSpecialChar, text: "One special character" },
+    ]
+  };
+};
+
+// Format date utility
+export const formatDate = (dateString: string): string => {
+  const date = new Date(dateString);
+  return date.toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  });
+};
+
+// Format currency utility
+export const formatCurrency = (amount: number): string => {
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
+  }).format(amount);
+};
+
 // Initialize auth token on app start
 const token = getAuthToken();
 if (token) {
   setAuthToken(token);
 }
 
+// Export default api instance
 export default api;
