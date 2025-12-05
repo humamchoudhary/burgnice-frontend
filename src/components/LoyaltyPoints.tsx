@@ -19,9 +19,12 @@ export const LoyaltyPoints: React.FC = () => {
 
     setLoading(true);
     try {
+      const API_BASE_URL =
+        import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
+
       const token = localStorage.getItem("token");
       const response = await axios.get(
-        "http://localhost:5000/api/orders/loyalty-summary",
+        `${API_BASE_URL}/api/orders/loyalty-summary`,
         {
           headers: { Authorization: `Bearer ${token}` },
         },
