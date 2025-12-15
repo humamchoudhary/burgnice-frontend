@@ -1,17 +1,29 @@
-import { Flame, Truck } from "lucide-react";
+import { X } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { useState } from "react";
 
 export const PromoBanner = () => {
+  const [isVisible, setIsVisible] = useState(true);
+
+  if (!isVisible) return null;
+
   return (
-    <div className="bg-gradient-to-r from-primary to-primary/80 text-primary-foreground py-3 px-4 animate-fade-in">
-      <div className="container mx-auto flex items-center justify-center gap-6 text-sm md:text-base font-medium">
-        <div className="flex items-center gap-2">
-          <Flame className="h-4 w-4 animate-pulse" />
-          <span>2-for-1 Tuesdays!</span>
+    <div className="bg-primary text-primary-foreground py-3 px-4 relative">
+      <div className="container mx-auto flex items-center justify-center">
+        <div className="text-center flex-1">
+          <p className="text-sm md:text-base font-medium">
+            🎉 <span className="font-bold">GRAND OPENING SPECIAL</span> - 20% OFF ALL ORDERS THIS WEEK! 
+            <span className="hidden md:inline"> USE CODE: <span className="font-bold">BURGNICE20</span></span>
+          </p>
         </div>
-        <div className="hidden sm:flex items-center gap-2">
-          <Truck className="h-4 w-4" />
-          <span>Free delivery over £15</span>
-        </div>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="absolute right-4 text-primary-foreground hover:bg-primary/20"
+          onClick={() => setIsVisible(false)}
+        >
+          <X className="h-4 w-4" />
+        </Button>
       </div>
     </div>
   );

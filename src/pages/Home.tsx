@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, ChevronRight, Star, Heart, Sparkles, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { CategoryCard } from "@/components/CategoryCard";
 import { TestimonialCarousel } from "@/components/TestimonialCarousel";
@@ -9,21 +9,16 @@ import { FeaturedItems } from "@/components/FeaturedItems";
 import { Link } from "react-router-dom";
 import { MenuItemType } from "@/components/MenuItem";
 import { categoryAPI, menuItemAPI } from "@/services/api";
-import { Loader2, Sparkles } from "lucide-react";
 import heroImage from "@/assets/hero-burger.jpg";
 import maybeamilkshakeImage from "@/assets/category-maybeamilkshake.jpeg";
 import burgerImage from "@/assets/category-burgers.jpeg";
 import smashBurgerImage from "@/assets/category-smashedburgers.jpeg";
-import boxitoffImage from "@/assets/category-boxitoff.jpeg";
-import sideImage from "@/assets/category-sides.jpeg";
 
 // Fallback images for categories
 const categoryImages: { [key: string]: string } = {
   maybeamilkshake: maybeamilkshakeImage,
   smashedburgers: smashBurgerImage,
   burgers: burgerImage,
-  boxitoff: boxitoffImage,
-  sides: sideImage,
 };
 
 interface HomeProps {
@@ -37,21 +32,17 @@ export const Home = ({ onAddToCart }: HomeProps) => {
   >([]);
   const [featuredItems, setFeaturedItems] = useState<MenuItemType[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        setError(null);
-
-        // Fetch categories and menu items
         const [categoriesData, menuData] = await Promise.all([
           categoryAPI.getAll(),
           menuItemAPI.getAll(),
         ]);
 
-        // Map categories with fallback images
+        // Map categories
         const mappedCategories = categoriesData.map((cat) => {
           const slug = cat.name.toLowerCase().replace(/\s+/g, "");
           const image = categoryImages[slug] || burgerImage;
@@ -63,7 +54,7 @@ export const Home = ({ onAddToCart }: HomeProps) => {
           };
         });
 
-        // Convert menu items to MenuItemType
+        // Featured items
         const convertedItems = menuData.slice(0, 4).map((item) => ({
           id: item._id,
           name: item.name,
@@ -75,14 +66,12 @@ export const Home = ({ onAddToCart }: HomeProps) => {
               ? item.category
               : item.category.name,
         }));
-        console.log(convertedItems);
+
         setCategories(mappedCategories);
         setFeaturedItems(convertedItems);
       } catch (err) {
         console.error("Error fetching home data:", err);
-        setError("Failed to load data. Using fallback content.");
-
-        // Fallback categories if API fails
+        // Fallback categories
         setCategories([
           {
             title: "Burgers",
@@ -96,7 +85,7 @@ export const Home = ({ onAddToCart }: HomeProps) => {
           },
           {
             title: "Drinks",
-            image: sideImage,
+            image: maybeamilkshakeImage,
             link: "/menu?category=drinks",
           },
         ]);
@@ -110,132 +99,65 @@ export const Home = ({ onAddToCart }: HomeProps) => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-background to-secondary/20">
-        <div className="text-center space-y-4">
-          <div className="relative">
-            <div className="absolute inset-0 flex items-center justify-center">
-              <div className="w-20 h-20 border-4 border-primary/20 border-t-primary rounded-full animate-spin"></div>
-            </div>
-            <Sparkles className="h-12 w-12 text-primary mx-auto mb-4 animate-pulse" />
-          </div>
-          <div>
-            <h2 className="text-xl font-semibold text-foreground">
-              Preparing Your Experience
-            </h2>
-            <p className="text-muted-foreground mt-2">Loading Burg N Ice...</p>
-          </div>
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-lg text-foreground">Loading Burg N Ice...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen overflow-hidden">
+    <div className="min-h-screen bg-background">
       {/* Promo Banner */}
       <PromoBanner />
 
-      {/* Hero Section - Enhanced */}
-      <section className="relative h-[90vh] min-h-[700px] overflow-hidden">
+      {/* Hero Section */}
+      <section className="relative h-screen min-h-[800px] flex items-center justify-center overflow-hidden bg-gradient-to-b from-background to-secondary/5">
         <div className="absolute inset-0 z-0">
           <img
             src={heroImage}
             alt="Delicious burger at Burg N Ice Manchester"
-            className="w-full h-full object-cover object-center scale-110 animate-parallax transition-transform duration-3000"
+            className="w-full h-full object-cover object-center"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-background via-background/70 to-transparent" />
-          <div className="absolute inset-0 bg-gradient-to-r from-background/30 via-transparent to-background/30" />
+          <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-transparent" />
         </div>
 
-        {/* Floating decorative elements */}
-        <div className="absolute top-20 left-10 w-24 h-24 bg-primary/10 rounded-full blur-xl animate-float"></div>
-        <div
-          className="absolute bottom-32 right-16 w-32 h-32 bg-secondary/20 rounded-full blur-xl animate-float"
-          style={{ animationDelay: "1s" }}
-        ></div>
-
-        <div className="relative z-10 container mx-auto px-4 h-full flex items-center justify-center">
-          <div className="max-w-5xl text-center animate-fade-in-up">
-            <div className="inline-flex items-center gap-2 mb-6 px-6 py-3 rounded-full bg-gradient-to-r from-primary/10 via-primary/5 to-primary/10 border border-primary/30 backdrop-blur-sm">
-              <Sparkles className="h-4 w-4 text-primary" />
-              <span className="text-sm font-medium text-primary">
-                Manchester's Favourite Since 2020
-              </span>
-            </div>
-
-            <h1 className="text-6xl md:text-7xl lg:text-8xl font-black mb-6 leading-tight tracking-tight bg-gradient-to-b from-foreground to-foreground/80 bg-clip-text text-transparent">
-              BURG N ICE
-            </h1>
-
-            <p
-              className="text-3xl md:text-4xl font-bold mb-4 text-foreground animate-fade-in-up"
-              style={{ animationDelay: "0.2s" }}
-            >
-              <span className="bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
-                Artisan Burgers
-              </span>
-              <span className="mx-4">•</span>
-              <span className="bg-gradient-to-r from-secondary to-secondary/70 bg-clip-text text-transparent">
-                Handcrafted Ice Cream
-              </span>
-            </p>
-
-            <p
-              className="text-xl md:text-2xl text-muted-foreground mb-12 max-w-3xl mx-auto leading-relaxed animate-fade-in-up"
-              style={{ animationDelay: "0.4s" }}
-            >
-              Where quality meets creativity. Experience Manchester's finest
-              handcrafted burgers and premium artisan ice cream made with
-              locally-sourced ingredients.
-            </p>
-
-            <div
-              className="flex flex-wrap gap-6 justify-center animate-fade-in-up"
-              style={{ animationDelay: "0.6s" }}
-            >
-              <Link to="/menu">
-                <Button
-                  size="lg"
-                  className="group text-lg h-16 px-12 rounded-full bg-gradient-to-r from-primary to-primary/80 hover:from-primary hover:to-primary shadow-2xl hover:shadow-primary/50 transition-all duration-300 hover:scale-105 font-semibold"
-                >
-                  <span className="flex items-center gap-2">
-                    Order Now
-                    <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
-                  </span>
-                </Button>
-              </Link>
-              <Link to="/about">
-                <Button
-                  variant="outline"
-                  size="lg"
-                  className="text-lg h-16 px-12 rounded-full border-2 hover:bg-accent/50 hover:border-accent transition-all duration-300 font-semibold backdrop-blur-sm"
-                >
-                  Discover Our Story
-                </Button>
-              </Link>
-            </div>
-
-            <div className="mt-16 flex items-center justify-center gap-8 text-sm text-muted-foreground">
-              <div className="flex items-center gap-2">
-                <div className="w-2 h-2 bg-primary rounded-full animate-pulse"></div>
-                <span>Fresh Ingredients Daily</span>
-              </div>
-              <div className="hidden md:block">•</div>
-              <div className="flex items-center gap-2">
-                <div
-                  className="w-2 h-2 bg-secondary rounded-full animate-pulse"
-                  style={{ animationDelay: "0.5s" }}
-                ></div>
-                <span>Locally Sourced</span>
-              </div>
-              <div className="hidden md:block">•</div>
-              <div className="flex items-center gap-2">
-                <div
-                  className="w-2 h-2 bg-primary rounded-full animate-pulse"
-                  style={{ animationDelay: "1s" }}
-                ></div>
-                <span>Free Delivery Over £15</span>
-              </div>
-            </div>
+        <div className="relative z-10 container mx-auto px-4 text-center">
+          <div className="mb-8">
+            <span className="inline-block px-6 py-2 bg-primary/10 backdrop-blur-sm rounded-full text-sm font-medium border border-primary/20 text-primary">
+              MANCHESTER'S FAVORITE SINCE 2020
+            </span>
+          </div>
+          
+          <h1 className="text-7xl md:text-8xl lg:text-9xl font-black mb-6 tracking-tighter leading-[0.9] text-foreground">
+            BURG N ICE
+          </h1>
+          
+          <p className="text-2xl md:text-3xl lg:text-4xl mb-10 max-w-3xl mx-auto font-light text-muted-foreground">
+            Where artisan burgers meet handcrafted ice cream
+          </p>
+          
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Link to="/menu">
+              <Button
+                size="lg"
+                className="bg-primary text-primary-foreground hover:bg-primary/90 px-10 py-6 rounded-full text-lg font-semibold shadow-lg hover:shadow-primary/30 hover:scale-105 transition-all"
+              >
+                ORDER NOW
+                <ArrowRight className="ml-2 h-5 w-5" />
+              </Button>
+            </Link>
+            <Link to="/about">
+              <Button
+                variant="outline"
+                size="lg"
+                className="border-primary text-primary hover:bg-primary/10 px-10 py-6 rounded-full text-lg font-semibold"
+              >
+                OUR STORY
+              </Button>
+            </Link>
           </div>
         </div>
       </section>
@@ -243,134 +165,188 @@ export const Home = ({ onAddToCart }: HomeProps) => {
       {/* Service Icons */}
       <ServiceIcons />
 
-      {/* About Section - Enhanced */}
-      <section className="py-24 relative overflow-hidden scroll-fade-in">
-        <div className="absolute -top-24 -left-24 w-96 h-96 bg-primary/5 rounded-full blur-3xl"></div>
-        <div className="absolute -bottom-24 -right-24 w-96 h-96 bg-secondary/5 rounded-full blur-3xl"></div>
-
-        <div className="relative container mx-auto px-4">
-          <div className="max-w-4xl mx-auto text-center">
-            <div className="inline-flex items-center gap-3 mb-6">
-              <div className="w-12 h-px bg-gradient-to-r from-transparent via-primary to-transparent"></div>
-              <span className="text-sm font-semibold text-primary tracking-wider uppercase">
-                Our Philosophy
-              </span>
-              <div className="w-12 h-px bg-gradient-to-r from-transparent via-primary to-transparent"></div>
-            </div>
-
-            <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-8 text-foreground">
-              Crafting Moments of{" "}
-              <span className="relative">
-                <span className="relative z-10 bg-gradient-to-r from-primary via-primary/80 to-primary bg-clip-text text-transparent">
-                  Joy
-                </span>
-                <span className="absolute -bottom-2 left-0 right-0 h-3 bg-primary/20 -rotate-1"></span>
-              </span>
-            </h2>
-
-            <div className="prose prose-lg mx-auto text-muted-foreground leading-relaxed space-y-6">
-              <p className="text-xl md:text-2xl font-light">
-                Born in the heart of Manchester, Burg N Ice fuses the city's
-                vibrant energy with our passion for culinary excellence.
-              </p>
-              <p className="text-lg">
-                We believe every meal should be an experience. That's why we
-                meticulously source ingredients from local suppliers, handcraft
-                each burger with artisanal techniques, and churn our ice cream
-                daily for maximum freshness. From our signature Manchester
-                Burger to our seasonal ice cream flavors, every creation tells a
-                story of quality, creativity, and community connection.
-              </p>
-            </div>
-
-            <div className="mt-12 grid grid-cols-2 md:grid-cols-4 gap-6 max-w-2xl mx-auto">
-              <div className="text-center p-4 rounded-2xl bg-gradient-to-b from-background to-accent/5 border border-accent/10">
-                <div className="text-3xl font-bold text-primary mb-2">100%</div>
-                <div className="text-sm text-muted-foreground">
-                  Local Ingredients
+      {/* Featured Categories Section */}
+      <section className="py-20 bg-background">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl md:text-5xl font-bold mb-4 text-foreground">Explore Our Menu</h2>
+            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+              Discover our carefully crafted categories, each with unique flavors and stories
+            </p>
+          </div>
+          
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+            {categories.map((category, index) => (
+              <div
+                key={category.title}
+                className="group relative overflow-hidden rounded-3xl aspect-square border border-border"
+              >
+                <img
+                  src={category.image}
+                  alt={category.title}
+                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-foreground/70 via-foreground/30 to-transparent" />
+                <div className="absolute bottom-0 left-0 right-0 p-8 text-white">
+                  <h3 className="text-3xl font-bold mb-2">{category.title}</h3>
+                  <Link to={category.link}>
+                    <Button
+                      variant="ghost"
+                      className="text-white hover:bg-white/20 px-6 py-2 rounded-full"
+                    >
+                      Explore →
+                    </Button>
+                  </Link>
                 </div>
               </div>
-              <div className="text-center p-4 rounded-2xl bg-gradient-to-b from-background to-accent/5 border border-accent/10">
-                <div className="text-3xl font-bold text-primary mb-2">50+</div>
-                <div className="text-sm text-muted-foreground">Menu Items</div>
-              </div>
-              <div className="text-center p-4 rounded-2xl bg-gradient-to-b from-background to-accent/5 border border-accent/10">
-                <div className="text-3xl font-bold text-primary mb-2">4.9★</div>
-                <div className="text-sm text-muted-foreground">
-                  Customer Rating
-                </div>
-              </div>
-              <div className="text-center p-4 rounded-2xl bg-gradient-to-b from-background to-accent/5 border border-accent/10">
-                <div className="text-3xl font-bold text-primary mb-2">24h</div>
-                <div className="text-sm text-muted-foreground">Fresh Prep</div>
-              </div>
-            </div>
+            ))}
           </div>
         </div>
       </section>
 
-      {/* Categories Section - Enhanced */}
-      {categories.length > 0 && (
-        <section className="py-24 relative scroll-fade-in">
-          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-secondary/5 to-transparent"></div>
-          <div className="relative container mx-auto px-4">
-            <div className="max-w-3xl mx-auto text-center mb-16">
-              <div className="inline-flex items-center gap-3 mb-6">
-                <div className="w-8 h-px bg-gradient-to-r from-transparent via-primary to-transparent"></div>
-                <span className="text-sm font-semibold text-primary tracking-wider uppercase">
-                  Explore
-                </span>
-                <div className="w-8 h-px bg-gradient-to-r from-transparent via-primary to-transparent"></div>
-              </div>
-              <h2 className="text-4xl md:text-5xl font-bold mb-6 text-foreground">
-                Our Culinary{" "}
-                <span className="bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
-                  Collections
-                </span>
-              </h2>
-              <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-                Discover our carefully curated menu categories, each crafted
-                with passion and precision
-              </p>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-              {categories.map((category, index) => (
-                <div
-                  key={category.title}
-                  className="scroll-fade-in group"
-                  style={{ animationDelay: `${index * 100}ms` }}
-                >
-                  <CategoryCard {...category} />
+      {/* Featured Product Showcase */}
+      {featuredItems.length > 0 && (
+        <section className="py-20 bg-secondary/5">
+          <div className="container mx-auto px-4">
+            <div className="grid md:grid-cols-2 gap-16 items-center">
+              <div className="relative">
+                <div className="relative rounded-3xl overflow-hidden shadow-2xl border border-border">
+                  <img
+                    src={featuredItems[0]?.image || burgerImage}
+                    alt={featuredItems[0]?.name}
+                    className="w-full h-[500px] object-cover"
+                  />
+                  <div className="absolute top-6 right-6 bg-background/95 backdrop-blur-sm rounded-full px-4 py-2 shadow-lg">
+                    <div className="flex items-center">
+                      <Star className="h-4 w-4 fill-yellow-400 text-yellow-400 mr-1" />
+                      <span className="font-bold text-lg text-foreground">4.9</span>
+                    </div>
+                  </div>
                 </div>
-              ))}
-            </div>
-
-            <div className="text-center mt-12">
-              <Link to="/menu">
-                <Button
-                  variant="outline"
-                  size="lg"
-                  className="rounded-full px-8 py-6 text-lg group"
-                >
-                  <span className="flex items-center gap-2">
-                    View Full Menu
-                    <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
-                  </span>
-                </Button>
-              </Link>
+              </div>
+              
+              <div>
+                <span className="inline-block px-4 py-1 bg-primary/10 text-primary rounded-full text-sm font-medium mb-4">
+                  MOST POPULAR
+                </span>
+                <h2 className="text-5xl md:text-6xl font-bold mb-6 leading-tight text-foreground">
+                  Our Signature Creation
+                </h2>
+                <h3 className="text-3xl font-bold mb-4 text-foreground">{featuredItems[0]?.name}</h3>
+                <p className="text-xl text-muted-foreground mb-8 leading-relaxed">
+                  {featuredItems[0]?.description}
+                </p>
+                <div className="flex items-center gap-6 mb-8">
+                  <span className="text-3xl font-bold text-foreground">£{featuredItems[0]?.price}</span>
+                  <Button
+                    onClick={() => featuredItems[0] && handleAddToCart(featuredItems[0])}
+                    className="bg-primary text-primary-foreground hover:bg-primary/90 px-8 py-4 rounded-full text-lg font-semibold"
+                  >
+                    Add to Order
+                  </Button>
+                </div>
+                <div className="space-y-3">
+                  <div className="flex items-center text-muted-foreground">
+                    <Check className="h-5 w-5 text-primary mr-3" />
+                    <span>Made with 100% locally-sourced beef</span>
+                  </div>
+                  <div className="flex items-center text-muted-foreground">
+                    <Check className="h-5 w-5 text-primary mr-3" />
+                    <span>Freshly baked buns daily</span>
+                  </div>
+                  <div className="flex items-center text-muted-foreground">
+                    <Check className="h-5 w-5 text-primary mr-3" />
+                    <span>House-made signature sauce</span>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </section>
       )}
 
-      {/* Featured Items Section */}
-      {featuredItems.length > 0 && (
-        <FeaturedItems items={featuredItems} onAddToCart={handleAddToCart} />
+      {/* Why Choose Us Section */}
+      <section className="py-20 bg-background">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl md:text-5xl font-bold mb-4 text-foreground">Why Choose Burg N Ice</h2>
+            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+              We're committed to delivering more than just great food
+            </p>
+          </div>
+          
+          <div className="grid md:grid-cols-3 gap-8">
+            <div className="text-center p-8 rounded-3xl border border-border hover:shadow-xl transition-all duration-300 hover:-translate-y-2 bg-card">
+              <div className="w-20 h-20 bg-primary/10 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                <Sparkles className="h-10 w-10 text-primary" />
+              </div>
+              <h3 className="text-2xl font-bold mb-4 text-foreground">Premium Ingredients</h3>
+              <p className="text-muted-foreground">
+                We source only the finest local ingredients for every dish
+              </p>
+            </div>
+            
+            <div className="text-center p-8 rounded-3xl border border-border hover:shadow-xl transition-all duration-300 hover:-translate-y-2 bg-card">
+              <div className="w-20 h-20 bg-primary/10 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                <Heart className="h-10 w-10 text-primary" />
+              </div>
+              <h3 className="text-2xl font-bold mb-4 text-foreground">Crafted with Passion</h3>
+              <p className="text-muted-foreground">
+                Every item is handcrafted with care and attention to detail
+              </p>
+            </div>
+            
+            <div className="text-center p-8 rounded-3xl border border-border hover:shadow-xl transition-all duration-300 hover:-translate-y-2 bg-card">
+              <div className="w-20 h-20 bg-primary/10 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                <Star className="h-10 w-10 text-primary" />
+              </div>
+              <h3 className="text-2xl font-bold mb-4 text-foreground">Exceptional Service</h3>
+              <p className="text-muted-foreground">
+                Our team is dedicated to making your experience memorable
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Featured Items Carousel */}
+      {featuredItems.length > 1 && (
+        <FeaturedItems items={featuredItems.slice(1)} onAddToCart={handleAddToCart} />
       )}
 
       {/* Testimonials Section */}
       <TestimonialCarousel />
+
+      {/* Final CTA Section */}
+      <section className="py-20 bg-foreground text-background">
+        <div className="container mx-auto px-4 text-center">
+          <h2 className="text-5xl md:text-6xl font-bold mb-6">
+            Ready to Experience Manchester's Best?
+          </h2>
+          <p className="text-xl text-muted-foreground mb-10 max-w-2xl mx-auto">
+            Join our community of satisfied customers who choose Burg N Ice for every occasion
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Link to="/menu">
+              <Button
+                size="lg"
+                className="bg-background text-foreground hover:bg-background/90 px-10 py-6 rounded-full text-lg font-semibold"
+              >
+                ORDER NOW
+              </Button>
+            </Link>
+            <Link to="/locations">
+              <Button
+                variant="outline"
+                size="lg"
+                className="border-background  text-foreground  hover:bg-background/10 px-10 py-6 rounded-full text-lg font-semibold"
+              >
+                FIND US
+              </Button>
+            </Link>
+          </div>
+        </div>
+      </section>
     </div>
   );
 };

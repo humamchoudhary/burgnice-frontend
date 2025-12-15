@@ -8,7 +8,7 @@ import { useAuth } from "@/contexts/authContext";
 import { LoyaltyPoints } from "@/components/LoyaltyPoints";
 import { UserMenu } from "@/components/UserMenu";
 import { AuthModal } from "@/components/AuthModal";
-
+import logo from "@/assets/logo.png";
 export const Header = ({ onCartClick }: { onCartClick: () => void }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [cartItemCount, setCartItemCount] = useState(0);
@@ -54,10 +54,14 @@ export const Header = ({ onCartClick }: { onCartClick: () => void }) => {
     <header className="sticky top-0 z-50 w-full bg-background/95 backdrop-blur-lg supports-[backdrop-filter]:bg-background/90 border-b shadow-sm">
       <div className="container mx-auto px-4 h-20 flex items-center justify-between">
         {/* Logo */}
+
         <Link to="/" className="flex items-center space-x-2 group">
-          <div className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent transition-all duration-300 group-hover:scale-105">
-            Burg N Ice
-          </div>
+          <img 
+            src={logo} 
+            alt="Burg N Ice Logo" 
+            className="h-16 w-auto transition-all duration-300 group-hover:scale-105"
+          />
+  
         </Link>
 
         {/* Desktop Navigation */}
@@ -125,17 +129,21 @@ export const Header = ({ onCartClick }: { onCartClick: () => void }) => {
             <SheetContent side="right" className="w-80 sm:w-96 p-0">
               <div className="p-6">
                 <div className="flex items-center justify-between mb-8">
-                  <div className="text-xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
-                    Burg N Ice
-                  </div>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
-                    <X className="h-5 w-5" />
-                  </Button>
-                </div>
+  <div className="flex items-center space-x-3">
+    <img 
+      src={logo}
+      alt="Burg N Ice Logo" 
+      className="h-8 w-auto"
+    />
+  </div>
+  <Button
+    variant="ghost"
+    size="icon"
+    onClick={() => setMobileMenuOpen(false)}
+  >
+    <X className="h-5 w-5" />
+  </Button>
+</div>
 
                 {/* Mobile Navigation */}
                 <nav className="space-y-2 mb-8">
