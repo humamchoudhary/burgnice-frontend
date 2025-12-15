@@ -1,29 +1,29 @@
 import { Clock, Leaf, Truck, Zap } from "lucide-react";
 
 const services = [
-  { icon: Zap, title: "Fast Service", description: "Ready in 30 mins" },
-  { icon: Leaf, title: "Locally Sourced", description: "Fresh from Manchester" },
-  { icon: Truck, title: "Free Delivery", description: "Over £15 orders" },
-  { icon: Clock, title: "Open Late", description: "Until 11 PM daily" },
+  { icon: Zap, title: "Fast Service", description: "30 mins or less" },
+  { icon: Leaf, title: "Local", description: "Manchester sourced" },
+  { icon: Truck, title: "Delivery", description: "Free over £15" },
+  { icon: Clock, title: "Open Late", description: "Until 11pm" },
 ];
 
 export const ServiceIcons = () => {
   return (
-    <section className="py-16 bg-background border-b border-border">
+    <section className="py-12 bg-white border-y border-gray-100">
       <div className="container mx-auto px-4">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-4">
           {services.map((service, index) => {
             const Icon = service.icon;
             return (
               <div
                 key={service.title}
-                className="flex flex-col items-center text-center group"
+                className="flex flex-col items-center text-center"
               >
-                <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-4 group-hover:bg-primary transition-colors">
-                  <Icon className="h-8 w-8 text-primary group-hover:text-primary-foreground transition-colors" />
+                <div className="w-12 h-12 rounded-full bg-gray-50 flex items-center justify-center mb-3">
+                  <Icon className="h-5 w-5 text-gray-700" />
                 </div>
-                <h3 className="font-bold text-foreground mb-1 text-lg">{service.title}</h3>
-                <p className="text-sm text-muted-foreground">{service.description}</p>
+                <h3 className="font-medium text-gray-900 mb-1 text-sm">{service.title}</h3>
+                <p className="text-xs text-gray-500">{service.description}</p>
               </div>
             );
           })}
