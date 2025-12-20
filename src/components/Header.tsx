@@ -51,7 +51,7 @@ export const Header = ({ onCartClick }: { onCartClick: () => void }) => {
   }, []);
 
   return (
-    <header className="sticky top-0 z-50 w-full bg-background/95 backdrop-blur-lg supports-[backdrop-filter]:bg-background/90 border-b shadow-sm">
+    <header className="sticky top-0 z-50 w-full bg-a63872 border-b shadow-lg">
       <div className="container mx-auto px-4 h-20 flex items-center justify-between">
         {/* Logo */}
 
@@ -59,7 +59,7 @@ export const Header = ({ onCartClick }: { onCartClick: () => void }) => {
           <img 
             src={logo} 
             alt="Burg N Ice Logo" 
-            className="h-16 w-auto transition-all duration-300 group-hover:scale-105"
+            className="h-16 w-auto transition-all duration-300 group-hover:scale-105 group-hover:brightness-0 group-hover:invert"
           />
   
         </Link>
@@ -69,8 +69,12 @@ export const Header = ({ onCartClick }: { onCartClick: () => void }) => {
           {navItems.map((item) => (
             <Link key={item.path} to={item.path}>
               <Button
-                variant={isActive(item.path) ? "default" : "ghost"}
-                className="transition-all duration-300 hover:scale-105"
+                variant={isActive(item.path) ? "secondary" : "ghost"}
+                className={`transition-all duration-300 hover:scale-105 ${
+                  isActive(item.path) 
+                    ? "bg-white text-a63872 shadow-md hover:bg-white" 
+                    : "text-white hover:bg-[#9A3068]"
+                }`}
               >
                 {item.name}
               </Button>
@@ -81,20 +85,22 @@ export const Header = ({ onCartClick }: { onCartClick: () => void }) => {
         {/* Right Section */}
         <div className="flex items-center gap-3">
           {/* Loyalty Points */}
-          <LoyaltyPoints />
+          <div className="text-white">
+            <LoyaltyPoints />
+          </div>
 
           {/* Cart Icon */}
           <Button
-            variant="outline"
+            variant="secondary"
             size="icon"
-            className="relative transition-all duration-300 hover:scale-110 hover:shadow-md group"
+            className="relative bg-white text-a63872 hover:bg-gray-100 transition-all duration-300 hover:scale-110 hover:shadow-lg group"
             onClick={onCartClick}
           >
             <ShoppingCart className="h-5 w-5 transition-transform group-hover:rotate-12" />
             {cartItemCount > 0 && (
               <Badge
                 variant="destructive"
-                className="absolute -top-2 -right-2 h-6 w-6 flex items-center justify-center p-0 text-xs animate-bounce"
+                className="absolute -top-2 -right-2 h-6 w-6 flex items-center justify-center p-0 text-xs animate-bounce bg-red-500"
               >
                 {cartItemCount}
               </Badge>
@@ -106,9 +112,9 @@ export const Header = ({ onCartClick }: { onCartClick: () => void }) => {
             <UserMenu />
           ) : (
             <Button
-              variant="default"
+              variant="secondary"
               size="sm"
-              className="hidden md:inline-flex h-10 px-4 rounded-full shadow-md hover:shadow-lg transition-all duration-300 hover:scale-105"
+              className="hidden md:inline-flex h-10 px-4 rounded-full bg-white text-a63872 shadow-md hover:shadow-lg hover:bg-gray-100 transition-all duration-300 hover:scale-105"
               onClick={() => setShowAuthModal(true)}
             >
               Sign In
@@ -118,7 +124,11 @@ export const Header = ({ onCartClick }: { onCartClick: () => void }) => {
           {/* Mobile Menu */}
           <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
             <SheetTrigger asChild className="md:hidden">
-              <Button variant="ghost" size="icon">
+              <Button 
+                variant="ghost" 
+                size="icon"
+                className="text-white hover:bg-[#9A3068]"
+              >
                 {mobileMenuOpen ? (
                   <X className="h-6 w-6" />
                 ) : (
@@ -126,24 +136,24 @@ export const Header = ({ onCartClick }: { onCartClick: () => void }) => {
                 )}
               </Button>
             </SheetTrigger>
-            <SheetContent side="right" className="w-80 sm:w-96 p-0">
+            <SheetContent side="right" className="w-80 sm:w-96 p-0 bg-white">
               <div className="p-6">
                 <div className="flex items-center justify-between mb-8">
-  <div className="flex items-center space-x-3">
-    <img 
-      src={logo}
-      alt="Burg N Ice Logo" 
-      className="h-8 w-auto"
-    />
-  </div>
-  <Button
-    variant="ghost"
-    size="icon"
-    onClick={() => setMobileMenuOpen(false)}
-  >
-    <X className="h-5 w-5" />
-  </Button>
-</div>
+                  <div className="flex items-center space-x-3">
+                    <img 
+                      src={logo}
+                      alt="Burg N Ice Logo" 
+                      className="h-8 w-auto"
+                    />
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    <X className="h-5 w-5" />
+                  </Button>
+                </div>
 
                 {/* Mobile Navigation */}
                 <nav className="space-y-2 mb-8">
@@ -155,7 +165,11 @@ export const Header = ({ onCartClick }: { onCartClick: () => void }) => {
                     >
                       <Button
                         variant={isActive(item.path) ? "default" : "ghost"}
-                        className="w-full justify-start text-lg h-12"
+                        className={`w-full justify-start text-lg h-12 ${
+                          isActive(item.path) 
+                            ? "bg-a63872 text-white" 
+                            : ""
+                        }`}
                       >
                         {item.name}
                       </Button>
@@ -173,7 +187,7 @@ export const Header = ({ onCartClick }: { onCartClick: () => void }) => {
                       <p className="font-semibold">{}</p>
                       <Button
                         variant="outline"
-                        className="w-full"
+                        className="w-full border-a63872 text-a63872 hover:bg-a63872 hover:text-white"
                         onClick={() => {
                           // Handle logout
                           setMobileMenuOpen(false);
@@ -184,7 +198,7 @@ export const Header = ({ onCartClick }: { onCartClick: () => void }) => {
                     </div>
                   ) : (
                     <Button
-                      className="w-full h-12"
+                      className="w-full h-12 bg-a63872 text-white hover:bg-[#9A3068]"
                       onClick={() => {
                         setShowAuthModal(true);
                         setMobileMenuOpen(false);

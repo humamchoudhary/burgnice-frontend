@@ -8,7 +8,7 @@ export const PromoBanner = () => {
   if (!isVisible) return null;
 
   return (
-    <div className="bg-primary text-primary-foreground py-3 px-4 relative">
+    <div className="bg-primary text-white py-3 px-4 relative">
       <div className="container mx-auto flex items-center justify-center">
         <div className="text-center flex-1">
           <p className="text-sm md:text-base font-medium">

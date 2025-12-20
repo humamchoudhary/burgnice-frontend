@@ -2,16 +2,12 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
-*/
-
 @layer base {
   :root {
   --background: 240 11% 96%;  /* #F5F5F5 */
   --foreground: 228 24% 15%;  /* #131727 */
   
-  --primary: 326 49% 44%;     /* #A63872 */
+  --primary: 326 49% 44%;     /* #A63872 - Exactly the purple you want */
   --primary-foreground: 0 0% 100%;
   
   --secondary: 217 13% 44%;   /* #667388 */
@@ -57,7 +53,7 @@ All colors MUST be HSL.
   --background: 228 24% 15%;  /* #131727 */
   --foreground: 0 0% 100%;    /* #FFFFFF */
   
-  --primary: 326 49% 44%;     /* #A63872 */
+  --primary: 326 49% 44%;     /* #A63872 - Same purple */
   --primary-foreground: 0 0% 100%;
   
   --secondary: 217 13% 44%;   /* #667388 */
@@ -80,6 +76,33 @@ All colors MUST be HSL.
     --sidebar-accent-foreground: 240 4.8% 95.9%;
     --sidebar-border: 240 3.7% 15.9%;
     --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+}
+
+/* Add exact purple color utility classes */
+@layer utilities {
+  .bg-a63872 {
+    background-color: #A63872;
+  }
+  
+  .text-a63872 {
+    color: #A63872;
+  }
+  
+  .border-a63872 {
+    border-color: #A63872;
+  }
+  
+  .hover\:bg-a63872:hover {
+    background-color: #A63872;
+  }
+  
+  .hover\:text-a63872:hover {
+    color: #A63872;
+  }
+  
+  .hover\:border-a63872:hover {
+    border-color: #A63872;
   }
 }
 

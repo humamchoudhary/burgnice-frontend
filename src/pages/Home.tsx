@@ -142,7 +142,7 @@ export const Home = ({ onAddToCart }: HomeProps) => {
       <section className="py-12 bg-white">
         <div className="container mx-auto px-4">
           <div className="text-center mb-8">
-            <h2 className="text-3xl font-bold text-gray-900 mb-2">Menu</h2>
+            <h2 className="text-3xl font-bold text-a63872 mb-2">Menu</h2>
             <p className="text-gray-600">Explore our offerings</p>
           </div>
           
@@ -174,7 +174,7 @@ export const Home = ({ onAddToCart }: HomeProps) => {
             <Link to="/menu">
               <Button
                 variant="outline"
-                className="border-black text-black hover:bg-black hover:text-white px-10 py-5 text-base rounded-none"
+                className="border-a63872 text-a63872 hover:bg-a63872 hover:text-white px-10 py-5 text-base rounded-none transition-colors"
               >
                 View All Items
               </Button>
@@ -183,7 +183,6 @@ export const Home = ({ onAddToCart }: HomeProps) => {
         </div>
       </section>
 
-      {/* Testimonials - Optional */}
       <TestimonialCarousel />
 
     </div>
