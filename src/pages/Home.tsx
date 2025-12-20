@@ -8,8 +8,7 @@ import { VisualGrid } from "@/components/VisualGrid";
 import { Link } from "react-router-dom";
 import { categoryAPI } from "@/services/api";
 
-// Only import images that actually exist
-import heroImage from "@/assets/hero-burger.jpg";
+import heroImage from "@/assets/hero.png";
 import burgerImage from "@/assets/category-burgers.jpeg";
 import maybeamilkshakeImage from "@/assets/category-maybeamilkshake.jpeg";
 import smashBurgerImage from "@/assets/category-smashedburgers.jpeg";

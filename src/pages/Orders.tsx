@@ -29,7 +29,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useNavigate } from "react-router-dom";
-import { userAPI, Order as ApiOrder } from "../services/api"; 
+import { toast } from "sonner";
+import { orderAPI, Order as ApiOrder, OrderWithTracking } from "../services/api";
 
 // Types for orders
 interface OrderItem {
@@ -55,7 +56,7 @@ interface Order {
 }
 
 // Helper function to convert API order to frontend order format
-const convertApiOrderToFrontendOrder = (apiOrder: ApiOrder): Order => {
+const convertApiOrderToFrontendOrder = (apiOrder: OrderWithTracking): Order => {
   // Determine status mapping
   const statusMap: Record<string, Order['status']> = {
     'pending': 'preparing',
@@ -68,18 +69,17 @@ const convertApiOrderToFrontendOrder = (apiOrder: ApiOrder): Order => {
   };
 
   // Convert items
-  const items: OrderItem[] = apiOrder.orderItems.map((item, index) => ({
+  const items: OrderItem[] = apiOrder.items.map((item, index) => ({
     id: `${apiOrder._id}-${index}`,
-    name: typeof item.menuItem === 'string' ? item.menuItem : item.menuItem.name,
+    name: item.name || 'Item',
     quantity: item.quantity,
     price: item.price,
-    category: typeof item.menuItem === 'string' ? 'Unknown' : 
-              (item.menuItem as any).category?.name || 'Unknown',
-    specialInstructions: item.notes
+    category: 'Unknown',
+    specialInstructions: apiOrder.notes || ''
   }));
 
   // Generate order number if not provided
-  const orderNumber = `FF-${new Date(apiOrder.createdAt || Date.now()).getFullYear()}-${apiOrder._id.slice(-4).toUpperCase()}`;
+  const orderNumber = apiOrder.orderNumber || `FF-${new Date(apiOrder.createdAt || Date.now()).getFullYear()}-${apiOrder._id.slice(-4).toUpperCase()}`;
 
   // Determine order type based on delivery address
   const hasDeliveryAddress = apiOrder.deliveryAddress && apiOrder.deliveryAddress.trim().length > 0;
@@ -91,7 +91,7 @@ const convertApiOrderToFrontendOrder = (apiOrder: ApiOrder): Order => {
     date: apiOrder.createdAt || new Date().toISOString(),
     status: statusMap[apiOrder.status] || 'preparing',
     items,
-    totalAmount: apiOrder.total || apiOrder.subtotal || 0,
+    totalAmount: apiOrder.total || 0,
     deliveryAddress: apiOrder.deliveryAddress || 'Not specified',
     orderType,
     paymentMethod: apiOrder.paymentMethod || 'Not specified'
@@ -120,76 +120,38 @@ const OrdersPage: React.FC = () => {
     const fetchOrders = async () => {
       setLoading(true);
       try {
-        // Option 1: Use the user orders endpoint
-        const response = await userAPI.getOrders({
-          page: 1,
-          limit: 20,
-          status: statusFilter === 'all' ? undefined : statusFilter
-        });
+        console.log("🔄 Fetching orders for user:", user?.id);
+
+        // Use the correct order history endpoint
+        const response = await orderAPI.getOrderHistory();
         
-        let ordersData: Order[] = [];
-        
-        if (response.data && Array.isArray(response.data)) {
-          // If response.data is an array of orders
-          ordersData = response.data.map(convertApiOrderToFrontendOrder);
-        } else if (response.orders && Array.isArray(response.orders)) {
-          // If response has orders array
-          ordersData = response.orders.map(convertApiOrderToFrontendOrder);
-        } else if (response.data && response.data.data) {
-          // If response has nested data.data structure
-          ordersData = response.data.data.map(convertApiOrderToFrontendOrder);
+        console.log("📦 API Response received:", response);
+
+        if (response && response.orders && Array.isArray(response.orders)) {
+          const ordersData = response.orders.map(convertApiOrderToFrontendOrder);
+          console.log(`✅ Converted ${ordersData.length} orders from API`);
+          
+          setOrders(ordersData);
+          setFilteredOrders(ordersData);
+        } else {
+          console.log("❌ No orders found in response");
+          setOrders([]);
+          setFilteredOrders([]);
         }
         
-        setOrders(ordersData);
-        setFilteredOrders(ordersData);
+      } catch (error: any) {
+        console.error("❌ Error fetching orders:", error);
+        console.error("Error details:", error.response?.data);
         
-        // If no orders from API, show mock data for demo
-        if (ordersData.length === 0) {
-          // Fallback to mock data for demonstration
-          const mockOrders: Order[] = [
-            {
-              id: "1",
-              orderNumber: "FF-2024-001",
-              date: new Date().toISOString(),
-              status: "delivered",
-              items: [
-                { id: "1", name: "Classic Burger", quantity: 2, price: 8.99, category: "Burgers" },
-                { id: "2", name: "French Fries", quantity: 1, price: 3.99, category: "Sides" },
-                { id: "3", name: "Coca-Cola", quantity: 2, price: 2.49, category: "Drinks" }
-              ],
-              totalAmount: 26.95,
-              estimatedReadyTime: "2024-03-15T12:30:00",
-              deliveryAddress: "123 Main St, New York, NY",
-              orderType: "delivery",
-              paymentMethod: "Credit Card"
-            }
-          ];
-          setOrders(mockOrders);
-          setFilteredOrders(mockOrders);
+        // Show empty state instead of mock data
+        setOrders([]);
+        setFilteredOrders([]);
+        
+        if (error.response?.status === 401) {
+          toast.error("Please login to view orders");
+        } else {
+          toast.error("Failed to load orders. Please try again.");
         }
-      } catch (error) {
-        console.error("Error fetching orders:", error);
-        // Fallback to mock data for fast food orders
-        const mockOrders: Order[] = [
-          {
-            id: "1",
-            orderNumber: "FF-2024-001",
-            date: new Date().toISOString(),
-            status: "delivered",
-            items: [
-              { id: "1", name: "Classic Burger", quantity: 2, price: 8.99, category: "Burgers" },
-              { id: "2", name: "French Fries", quantity: 1, price: 3.99, category: "Sides" },
-              { id: "3", name: "Coca-Cola", quantity: 2, price: 2.49, category: "Drinks" }
-            ],
-            totalAmount: 26.95,
-            estimatedReadyTime: "2024-03-15T12:30:00",
-            deliveryAddress: "123 Main St, New York, NY",
-            orderType: "delivery",
-            paymentMethod: "Credit Card"
-          }
-        ];
-        setOrders(mockOrders);
-        setFilteredOrders(mockOrders);
       } finally {
         setLoading(false);
       }
@@ -199,6 +161,8 @@ const OrdersPage: React.FC = () => {
       fetchOrders();
     } else {
       setLoading(false);
+      setOrders([]);
+      setFilteredOrders([]);
     }
   }, [user, statusFilter]);
 

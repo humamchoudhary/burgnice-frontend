@@ -76,6 +76,11 @@ export const UserMenu: React.FC = () => {
     navigate('/orders');
   };
 
+    const handleSettingsClick = () => {
+    setIsOpen(false);
+    navigate('/settings');
+  };
+
   return (
     <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
       <DropdownMenuTrigger asChild>
@@ -99,16 +104,22 @@ export const UserMenu: React.FC = () => {
               </span>
             </div>
 
-            <ChevronDown className="h-4 w-4 text-muted-foreground transition-transform duration-300 group-hover:rotate-180" />
+<ChevronDown
+  className={`h-4 w-4 text-muted-foreground transition-transform duration-300 ${
+    isOpen ? "rotate-180" : ""
+  }`}
+/>
           </div>
         </Button>
       </DropdownMenuTrigger>
 
-      <DropdownMenuContent
-        align="end"
-        className="w-64 p-2 rounded-xl shadow-lg border-0 mt-2"
-        sideOffset={8}
-      >
+<DropdownMenuContent
+  align="end"
+  sideOffset={12}
+  collisionPadding={16}
+  className="w-64 p-2 rounded-xl shadow-xl border bg-background z-50"
+>
+
         {/* User Info */}
         <div className="px-3 py-2 mb-1">
           <div className="flex items-center gap-3">
@@ -155,13 +166,15 @@ export const UserMenu: React.FC = () => {
 
         <DropdownMenuItem
           onClick={handleOrdersClick}
-          className="px-3 py-2.5 rounded-lg cursor-pointer hover:bg-accent/50 focus:bg-accent/50"
+          className="px-3 py-2.5 roundedlg cursor-pointer hover:bg-accent/50 focus:bg-accent/50"
         >
           <Package className="h-4 w-4 mr-2" />
           <span>My Orders</span>
         </DropdownMenuItem>
 
-        <DropdownMenuItem className="px-3 py-2.5 rounded-lg cursor-pointer hover:bg-accent/50 focus:bg-accent/50">
+        <DropdownMenuItem
+        onClick={handleSettingsClick}
+        className="px-3 py-2.5 rounded-lg cursor-pointer hover:bg-accent/50 focus:bg-accent/50">
           <Settings className="h-4 w-4 mr-2" />
           <span>Settings</span>
         </DropdownMenuItem>

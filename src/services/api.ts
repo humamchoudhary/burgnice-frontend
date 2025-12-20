@@ -231,6 +231,15 @@ export interface PaginatedResponse<T> {
   hasPrev: boolean;
 }
 
+// Order history response (from getUserOrderHistory)
+export interface OrderHistoryResponse {
+  orders: OrderWithTracking[];
+  totalOrders: number;
+  totalSpent: number;
+  loyaltyPoints: number;
+  recentOrder: OrderWithTracking | null;
+}
+
 // Enhanced API functions
 export const categoryAPI = {
   // Basic CRUD
@@ -382,7 +391,7 @@ export const orderAPI = {
   },
 
   getMyOrders: async (params?: OrderQueryParams): Promise<Order[]> => {
-    const response = await api.get("/orders/my-orders", { params });
+    const response = await api.get("/orders/user", { params });
     return response.data;
   },
 
@@ -443,6 +452,32 @@ export const orderAPI = {
     const response = await api.post("/orders", orderData);
     return response.data;
   },
+
+  // Get order history (main endpoint for user orders)
+  getOrderHistory: async (): Promise<OrderHistoryResponse> => {
+    const response = await api.get("/orders/history");
+    return response.data;
+  },
+
+  // Get order tracking
+  getOrderTracking: async (orderId: string): Promise<{
+    orderId: string;
+    orderNumber: string;
+    status: string;
+    statusText: string;
+    trackingInfo: any;
+    estimatedDelivery: {
+      estimated: string;
+      isDelivered: boolean;
+      timeRemaining?: number;
+      deliveredAt?: string;
+    };
+    createdAt: string;
+    updatedAt: string;
+  }> => {
+    const response = await api.get(`/orders/${orderId}/tracking`);
+    return response.data;
+  },
 };
 
 // Auth API
@@ -498,19 +533,21 @@ export const userAPI = {
     return response.data;
   },
 
+  // DEPRECATED: Use orderAPI.getOrderHistory() instead
   // Get user orders with pagination
   getOrders: async (params?: {
     page?: number;
     limit?: number;
     status?: string;
   }): Promise<UserOrdersResponse> => {
-    const response = await api.get("/user/orders", { params });
+    console.warn("userAPI.getOrders() is deprecated. Use orderAPI.getOrderHistory() instead.");
+    const response = await api.get("/orders/history", { params });
     return response.data;
   },
 
   // Get specific order details
   getOrderDetails: async (orderId: string): Promise<OrderWithTracking> => {
-    const response = await api.get(`/user/orders/${orderId}`);
+    const response = await api.get(`/orders/${orderId}/details`);
     return response.data;
   },
 
@@ -526,14 +563,8 @@ export const userAPI = {
     return response.data;
   },
 
-  // Get order history (legacy endpoint - use getOrders instead)
-  getOrderHistory: async (): Promise<{
-    orders: OrderWithTracking[];
-    totalOrders: number;
-    totalSpent: number;
-    loyaltyPoints: number;
-    recentOrder: OrderWithTracking | null;
-  }> => {
+  // Get order history (legacy endpoint - use orderAPI.getOrderHistory instead)
+  getOrderHistory: async (): Promise<OrderHistoryResponse> => {
     const response = await api.get("/orders/history");
     return response.data;
   },
