@@ -24,7 +24,7 @@ const testimonials: Testimonial[] = [
     date: "2 weeks ago",
     initials: "SM",
     location: "Deansgate",
-    type: "Burger Lover"
+    type: "Burger Lover",
   },
   {
     name: "James T.",
@@ -33,7 +33,7 @@ const testimonials: Testimonial[] = [
     date: "1 month ago",
     initials: "JT",
     location: "Manchester City Centre",
-    type: "Regular Customer"
+    type: "Regular Customer",
   },
   {
     name: "Emily R.",
@@ -42,7 +42,7 @@ const testimonials: Testimonial[] = [
     date: "3 weeks ago",
     initials: "ER",
     location: "Salford Quays",
-    type: "Food Enthusiast"
+    type: "Food Enthusiast",
   },
   {
     name: "Michael P.",
@@ -51,7 +51,7 @@ const testimonials: Testimonial[] = [
     date: "1 week ago",
     initials: "MP",
     location: "Northern Quarter",
-    type: "Delivery Customer"
+    type: "Delivery Customer",
   },
   {
     name: "Lisa K.",
@@ -60,7 +60,7 @@ const testimonials: Testimonial[] = [
     date: "4 days ago",
     initials: "LK",
     location: "Ancoats",
-    type: "Vegetarian Foodie"
+    type: "Vegetarian Foodie",
   },
   {
     name: "David W.",
@@ -69,7 +69,7 @@ const testimonials: Testimonial[] = [
     date: "2 days ago",
     initials: "DW",
     location: "MediaCity",
-    type: "Family Regular"
+    type: "Family Regular",
   },
 ];
 
@@ -97,13 +97,13 @@ export const TestimonialCarousel = () => {
 
   const nextSlide = () => {
     setCurrentIndex((prev) =>
-      prev + itemsToShow >= testimonials.length ? 0 : prev + itemsToShow
+      prev + itemsToShow >= testimonials.length ? 0 : prev + itemsToShow,
     );
   };
 
   const prevSlide = () => {
     setCurrentIndex((prev) =>
-      prev === 0 ? testimonials.length - itemsToShow : prev - itemsToShow
+      prev === 0 ? testimonials.length - itemsToShow : prev - itemsToShow,
     );
   };
 
@@ -119,22 +119,25 @@ export const TestimonialCarousel = () => {
 
   const visibleTestimonials = testimonials.slice(
     currentIndex,
-    Math.min(currentIndex + itemsToShow, testimonials.length)
+    Math.min(currentIndex + itemsToShow, testimonials.length),
   );
 
   // If we're at the end and don't have enough items, fill from the beginning
-  const finalVisibleTestimonials = visibleTestimonials.length < itemsToShow
-    ? [
-        ...visibleTestimonials,
-        ...testimonials.slice(0, itemsToShow - visibleTestimonials.length)
-      ]
-    : visibleTestimonials;
+  const finalVisibleTestimonials =
+    visibleTestimonials.length < itemsToShow
+      ? [
+          ...visibleTestimonials,
+          ...testimonials.slice(0, itemsToShow - visibleTestimonials.length),
+        ]
+      : visibleTestimonials;
 
   const handleReviewSubmit = async (reviewData: ReviewData) => {
     return new Promise<void>((resolve) => {
       setTimeout(() => {
         console.log("Review submitted:", reviewData);
-        toast.success("Thank you for your review! It will appear after moderation.");
+        toast.success(
+          "Thank you for your review! It will appear after moderation.",
+        );
         resolve();
       }, 1500);
     });
@@ -144,25 +147,27 @@ export const TestimonialCarousel = () => {
     <section className="py-24  bg-background overflow-hidden">
       {/* Background decoration */}
       <div className="absolute inset-0 bg-gradient-to-b from-background via-secondary/5 to-transparent"></div>
-      <div className="absolute top-20 left-10 w-96 h-96 bg-primary/5 rounded-full blur-3xl"></div>
       <div className="absolute bottom-20 right-10 w-96 h-96 bg-secondary/5 rounded-full blur-3xl"></div>
-      
+
       <div className="relative container mx-auto px-4">
         <div className="max-w-4xl mx-auto text-center mb-16">
           <div className="inline-flex items-center gap-2 mb-6 px-4 py-2 rounded-full bg-gradient-to-r from-primary/10 via-primary/5 to-primary/10 border border-primary/30">
             <Sparkles className="h-4 w-4 text-primary" />
-            <span className="text-sm font-medium text-primary">Customer Stories</span>
+            <span className="text-sm font-medium text-primary">
+              Customer Stories
+            </span>
           </div>
-          
+
           <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 text-foreground">
             Loved by{" "}
             <span className="bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
               Manchester
             </span>
           </h2>
-          
+
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            Hear what our customers have to say about their Burg N Ice experience
+            Hear what our customers have to say about their Burg N Ice
+            experience
           </p>
         </div>
 
@@ -182,7 +187,6 @@ export const TestimonialCarousel = () => {
                 <Card className="h-full group border-0 bg-gradient-to-b from-background to-accent/5 hover:to-primary/5 transition-all duration-500 hover:shadow-2xl hover:-translate-y-2">
                   <CardContent className="p-6 md:p-8">
                     <div className="relative">
-                      
                       {/* Customer Info */}
                       <div className="flex items-start gap-3 mb-4">
                         <Avatar className="h-12 w-12 md:h-14 md:w-14 ring-2 ring-primary/20 group-hover:ring-primary/40 transition-all duration-300 flex-shrink-0">
@@ -190,7 +194,7 @@ export const TestimonialCarousel = () => {
                             {testimonial.initials}
                           </AvatarFallback>
                         </Avatar>
-                        
+
                         <div className="flex-1 min-w-0 space-y-1">
                           {/* Name and Rating */}
                           <div className="flex items-start justify-between gap-2">
@@ -217,12 +221,14 @@ export const TestimonialCarousel = () => {
                               ))}
                             </div>
                           </div>
-                          
+
                           {/* Location and Date */}
                           <div className="flex items-center gap-1.5 text-xs md:text-sm text-muted-foreground">
                             {testimonial.location && (
                               <>
-                                <span className="truncate">{testimonial.location}</span>
+                                <span className="truncate">
+                                  {testimonial.location}
+                                </span>
                                 <span className="text-xs opacity-50">•</span>
                               </>
                             )}
@@ -230,7 +236,7 @@ export const TestimonialCarousel = () => {
                           </div>
                         </div>
                       </div>
-                      
+
                       {/* Testimonial Text */}
                       <div className="mt-4 md:mt-6">
                         <p className="text-muted-foreground leading-relaxed italic text-sm md:text-base relative pl-4 border-l-2 border-primary/30">
@@ -293,7 +299,7 @@ export const TestimonialCarousel = () => {
                 { label: "5-Star Reviews", value: "98%" },
                 { label: "Would Recommend", value: "99%" },
               ].map((stat, index) => (
-                <div 
+                <div
                   key={index}
                   className="text-center p-4 rounded-2xl bg-gradient-to-b from-background to-accent/5 border border-accent/10 hover:border-accent/30 transition-all duration-300 hover:-translate-y-1"
                 >
@@ -314,8 +320,8 @@ export const TestimonialCarousel = () => {
           <p className="text-lg text-muted-foreground mb-6">
             Join our satisfied customers and share your Burg N Ice experience
           </p>
-          <Button 
-            size="lg" 
+          <Button
+            size="lg"
             className="rounded-full px-8 bg-gradient-to-r from-primary to-primary/80 hover:from-primary hover:to-primary shadow-xl hover:shadow-primary/50 transition-all duration-300 hover:scale-105"
             onClick={() => setIsReviewModalOpen(true)}
           >

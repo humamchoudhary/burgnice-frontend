@@ -56,12 +56,11 @@ export const Header = ({ onCartClick }: { onCartClick: () => void }) => {
         {/* Logo */}
 
         <Link to="/" className="flex items-center space-x-2 group">
-          <img 
-            src={logo} 
-            alt="Burg N Ice Logo" 
+          <img
+            src={logo}
+            alt="Burg N Ice Logo"
             className="h-16 w-auto transition-all duration-300 group-hover:scale-105 group-hover:brightness-0 group-hover:invert"
           />
-  
         </Link>
 
         {/* Desktop Navigation */}
@@ -71,8 +70,8 @@ export const Header = ({ onCartClick }: { onCartClick: () => void }) => {
               <Button
                 variant={isActive(item.path) ? "secondary" : "ghost"}
                 className={`transition-all duration-300 hover:scale-105 ${
-                  isActive(item.path) 
-                    ? "bg-white text-a63872 shadow-md hover:bg-white" 
+                  isActive(item.path)
+                    ? "bg-white text-a63872 shadow-md hover:bg-white"
                     : "text-white hover:bg-[#9A3068]"
                 }`}
               >
@@ -124,8 +123,8 @@ export const Header = ({ onCartClick }: { onCartClick: () => void }) => {
           {/* Mobile Menu */}
           <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
             <SheetTrigger asChild className="md:hidden">
-              <Button 
-                variant="ghost" 
+              <Button
+                variant="ghost"
                 size="icon"
                 className="text-white hover:bg-[#9A3068]"
               >
@@ -136,13 +135,13 @@ export const Header = ({ onCartClick }: { onCartClick: () => void }) => {
                 )}
               </Button>
             </SheetTrigger>
-            <SheetContent side="right" className="w-80 sm:w-96 p-0 bg-white">
+            <SheetContent side="right" className="md:w-80 w-96 p-0 bg-white">
               <div className="p-6">
                 <div className="flex items-center justify-between mb-8">
                   <div className="flex items-center space-x-3">
-                    <img 
+                    <img
                       src={logo}
-                      alt="Burg N Ice Logo" 
+                      alt="Burg N Ice Logo"
                       className="h-8 w-auto"
                     />
                   </div>
@@ -166,9 +165,7 @@ export const Header = ({ onCartClick }: { onCartClick: () => void }) => {
                       <Button
                         variant={isActive(item.path) ? "default" : "ghost"}
                         className={`w-full justify-start text-lg h-12 ${
-                          isActive(item.path) 
-                            ? "bg-a63872 text-white" 
-                            : ""
+                          isActive(item.path) ? "bg-a63872 text-white" : ""
                         }`}
                       >
                         {item.name}

@@ -4,33 +4,37 @@
 
 @layer base {
   :root {
-  --background: 240 11% 96%;  /* #F5F5F5 */
-  --foreground: 228 24% 15%;  /* #131727 */
-  
-  --primary: 326 49% 44%;     /* #A63872 - Exactly the purple you want */
-  --primary-foreground: 0 0% 100%;
-  
-  --secondary: 217 13% 44%;   /* #667388 */
-  --secondary-foreground: 0 0% 100%;
-  
-  --accent: 217 13% 44%;      /* #667388 */
-  --accent-foreground: 0 0% 100%;
-  
-  --muted: 240 4% 91%;
-  --muted-foreground: 228 10% 38%;
-  
-  --border: 217 13% 85%;
-  --input: 217 13% 85%;
-  --ring: 326 49% 44%;   
+    --background: 240 11% 96%; /* #F5F5F5 */
+    --foreground: 228 24% 15%; /* #131727 */
+
+    --primary: 326 49% 44%; /* #A63872 - Exactly the purple you want */
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 217 13% 44%; /* #667388 */
+    --secondary-foreground: 0 0% 100%;
+
+    --accent: 217 13% 44%; /* #667388 */
+    --accent-foreground: 0 0% 100%;
+
+    --muted: 240 4% 91%;
+    --muted-foreground: 228 10% 38%;
+
+    --border: 217 13% 85%;
+    --input: 217 13% 85%;
+    --ring: 326 49% 44%;
 
     --radius: 1rem;
-    
+
     /* Custom tokens for 3D depth */
     --shadow-soft: 0 2px 8px rgba(0, 0, 0, 0.08);
     --shadow-medium: 0 4px 16px rgba(0, 0, 0, 0.12);
     --shadow-strong: 0 8px 24px rgba(0, 0, 0, 0.16);
     --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    --gradient-hero: linear-gradient(135deg, hsl(var(--background)) 0%, hsl(30 30% 98%) 100%);
+    --gradient-hero: linear-gradient(
+      135deg,
+      hsl(var(--background)) 0%,
+      hsl(30 30% 98%) 100%
+    );
 
     --sidebar-background: 0 0% 98%;
 
@@ -50,24 +54,24 @@
   }
 
   .dark {
-  --background: 228 24% 15%;  /* #131727 */
-  --foreground: 0 0% 100%;    /* #FFFFFF */
-  
-  --primary: 326 49% 44%;     /* #A63872 - Same purple */
-  --primary-foreground: 0 0% 100%;
-  
-  --secondary: 217 13% 44%;   /* #667388 */
-  --secondary-foreground: 0 0% 100%;
-  
-  --accent: 217 13% 44%;      /* #667388 */
-  --accent-foreground: 0 0% 100%;
-  
-  --muted: 228 24% 20%;
-  --muted-foreground: 217 13% 70%;
-  
-  --border: 228 24% 25%;
-  --input: 228 24% 25%;
-  --ring: 326 49% 44%; 
+    --background: 228 24% 15%; /* #131727 */
+    --foreground: 0 0% 100%; /* #FFFFFF */
+
+    --primary: 326 49% 44%; /* #A63872 - Same purple */
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 217 13% 44%; /* #667388 */
+    --secondary-foreground: 0 0% 100%;
+
+    --accent: 217 13% 44%; /* #667388 */
+    --accent-foreground: 0 0% 100%;
+
+    --muted: 228 24% 20%;
+    --muted-foreground: 217 13% 70%;
+
+    --border: 228 24% 25%;
+    --input: 228 24% 25%;
+    --ring: 326 49% 44%;
     --sidebar-background: 240 5.9% 10%;
     --sidebar-foreground: 240 4.8% 95.9%;
     --sidebar-primary: 224.3 76.3% 48%;
@@ -82,27 +86,27 @@
 /* Add exact purple color utility classes */
 @layer utilities {
   .bg-a63872 {
-    background-color: #A63872;
+    background-color: #a63872;
   }
-  
+
   .text-a63872 {
-    color: #A63872;
+    color: #a63872;
   }
-  
+
   .border-a63872 {
-    border-color: #A63872;
+    border-color: #a63872;
   }
-  
+
   .hover\:bg-a63872:hover {
-    background-color: #A63872;
+    background-color: #a63872;
   }
-  
+
   .hover\:text-a63872:hover {
-    color: #A63872;
+    color: #a63872;
   }
-  
+
   .hover\:border-a63872:hover {
-    border-color: #A63872;
+    border-color: #a63872;
   }
 }
 
@@ -120,55 +124,55 @@
   .animate-fade-in {
     animation: fadeIn 0.6s ease-out forwards;
   }
-  
-@keyframes fadeIn {
-  from {
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes parallax {
+    0% {
+      transform: scale(1);
+    }
+    50% {
+      transform: scale(1.05);
+    }
+    100% {
+      transform: scale(1);
+    }
+  }
+
+  .animate-parallax {
+    animation: parallax 20s ease-in-out infinite;
+  }
+
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .scroll-fade-in {
     opacity: 0;
-    transform: translateY(20px);
+    animation: fadeIn 0.8s ease-out forwards;
+    animation-timeline: view();
+    animation-range: entry 0% cover 30%;
   }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes parallax {
-  0% {
-    transform: scale(1);
-  }
-  50% {
-    transform: scale(1.05);
-  }
-  100% {
-    transform: scale(1);
-  }
-}
-
-.animate-parallax {
-  animation: parallax 20s ease-in-out infinite;
-}
-
-.scrollbar-hide::-webkit-scrollbar {
-  display: none;
-}
-
-.scrollbar-hide {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
-}
-
-.scroll-fade-in {
-  opacity: 0;
-  animation: fadeIn 0.8s ease-out forwards;
-  animation-timeline: view();
-  animation-range: entry 0% cover 30%;
-}
 }
 @layer utilities {
   .animate-in {
     animation: animate-in 0.3s ease-out;
   }
-  
+
   @keyframes animate-in {
     from {
       opacity: 0;
@@ -179,11 +183,11 @@
       transform: translateY(0);
     }
   }
-  
+
   .slide-in-from-top-5 {
     animation: slide-in-from-top-5 0.3s ease-out;
   }
-  
+
   @keyframes slide-in-from-top-5 {
     from {
       opacity: 0;
@@ -194,4 +198,7 @@
       transform: translateY(0);
     }
   }
+}
+body {
+  overflow-x: hidden;
 }

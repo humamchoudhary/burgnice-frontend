@@ -30,7 +30,7 @@ export const Layout = () => {
       return;
     }
     setCartItems((prev) =>
-      prev.map((item) => (item.id === id ? { ...item, quantity } : item))
+      prev.map((item) => (item.id === id ? { ...item, quantity } : item)),
     );
   };
 
@@ -42,8 +42,11 @@ export const Layout = () => {
   const cartItemCount = cartItems.reduce((sum, item) => sum + item.quantity, 0);
 
   return (
-    <div className="min-h-screen flex flex-col">
-      <Header cartItemCount={cartItemCount} onCartClick={() => setCartOpen(true)} />
+    <div className="min-h-screen flex flex-col overflow-x-hidden">
+      <Header
+        cartItemCount={cartItemCount}
+        onCartClick={() => setCartOpen(true)}
+      />
       <main className="flex-1">
         <Outlet context={{ onAddToCart: handleAddToCart, cartItemCount }} />
       </main>
