@@ -97,7 +97,7 @@ export const Footer = () => {
           </div>
         </div>
     <div className="text-center my-8">
-  <h3 className="text-2xl font-bold mb-4 text-foreground">Find Us in Manchester</h3>
+  <h3 className="text-2xl font-bold mb-4 text-foreground">Find Us in Northwich</h3>
   <p className="text-muted-foreground max-w-2xl mx-auto">
     Located in the heart of Deansgate, easily accessible by tram, train, and bus. 
     Free parking available at the NCP just 3 minutes away.
@@ -113,7 +113,7 @@ export const Footer = () => {
             allowFullScreen
             loading="lazy"
             referrerPolicy="no-referrer-when-downgrade"
-            title="Burg N Ice Location in Manchester"
+            title="Burg N Ice Location in Northwich"
           />
         </div>
 

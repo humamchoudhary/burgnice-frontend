@@ -161,7 +161,7 @@ export const TestimonialCarousel = () => {
           <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 text-foreground">
             Loved by{" "}
             <span className="bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
-              Manchester
+              Northwich
             </span>
           </h2>
 

@@ -2,11 +2,13 @@ import { useState, useEffect } from "react";
 import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { TestimonialCarousel } from "@/components/TestimonialCarousel";
-import { PromoBanner } from "@/components/PromoBanner";
 import { ServiceIcons } from "@/components/ServiceIcons";
-import { VisualGrid } from "@/components/VisualGrid";
+import HorizontalMenuGrid from "@/components/HorizontalMenuGrid";
 import { Link } from "react-router-dom";
 import { categoryAPI } from "@/services/api";
+import  TopDealsGrid  from "@/components/TopDealGrid";
+
+// In your Home component, replace or add:
 
 import heroImage from "@/assets/hero.png";
 import burgerImage from "@/assets/category-burgers.jpeg";
@@ -97,8 +99,7 @@ export const Home = ({ onAddToCart }: HomeProps) => {
 
   return (
     <div className="min-h-screen bg-white">
-      {/* Promo Banner */}
-      <PromoBanner />
+      
 
       {/* Hero Section - Minimal */}
       <section className="relative min-h-[75vh] flex items-center justify-center overflow-hidden bg-black">
@@ -116,7 +117,7 @@ export const Home = ({ onAddToCart }: HomeProps) => {
             BURG N ICE
           </h1>
           <p className="text-lg text-gray-200 mb-12 max-w-md mx-auto">
-            Manchester
+            #1 in Northwich
           </p>
           
           <Link to="/menu">
@@ -134,54 +135,10 @@ export const Home = ({ onAddToCart }: HomeProps) => {
       {/* Service Icons */}
       <ServiceIcons />
 
-      {/* Visual Grid */}
-      <VisualGrid />
-
-      {/* Menu Categories Grid */}
-      <section className="py-12 bg-white">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-8">
-            <h2 className="text-3xl font-bold text-a63872 mb-2">Menu</h2>
-            <p className="text-gray-600">Explore our offerings</p>
-          </div>
-          
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {categories.map((category, index) => (
-              <Link
-                key={index}
-                to={category.link}
-                className="group relative overflow-hidden aspect-square bg-gray-100"
-              >
-                <img
-                  src={category.image}
-                  alt={category.title}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent" />
-                <div className="absolute bottom-0 left-0 right-0 p-6">
-                  <h3 className="text-xl font-semibold text-white">{category.title}</h3>
-                  <div className="flex items-center justify-between mt-2">
-                    <span className="text-sm text-gray-200">View</span>
-                    <ArrowRight className="h-4 w-4 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
-                  </div>
-                </div>
-              </Link>
-            ))}
-          </div>
-          
-          <div className="text-center mt-10">
-            <Link to="/menu">
-              <Button
-                variant="outline"
-                className="border-a63872 text-a63872 hover:bg-a63872 hover:text-white px-10 py-5 text-base rounded-none transition-colors"
-              >
-                View All Items
-              </Button>
-            </Link>
-          </div>
-        </div>
-      </section>
-
+      {/* Horizontal Grid */}
+      <HorizontalMenuGrid />
+        <TopDealsGrid onAddToCart={onAddToCart} />
+      
       <TestimonialCarousel />
 
     </div>
