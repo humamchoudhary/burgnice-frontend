@@ -47,7 +47,7 @@ export const Layout = () => {
         cartItemCount={cartItemCount}
         onCartClick={() => setCartOpen(true)}
       />
-      <main className="flex-1">
+      <main className="flex-1 pt-20">
         <Outlet context={{ onAddToCart: handleAddToCart, cartItemCount }} />
       </main>
       <Footer />

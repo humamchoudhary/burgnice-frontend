@@ -1,13 +1,9 @@
 import React, { useState } from "react";
-import { X, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { useAuth } from "@/contexts/authContext";
+import { useNavigate } from "react-router-dom";
 
-interface AuthModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-}
-
-export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
+export const AuthPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<"login" | "register">("login");
   const [formData, setFormData] = useState({
     username: "",
@@ -53,6 +49,8 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
   };
 
   const { login, register } = useAuth();
+
+  const navigate = useNavigate();
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -67,8 +65,8 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
       } else {
         await register(formData.username, formData.email, formData.password);
       }
-      onClose();
       resetForm();
+      navigate("/");
     } catch (error) {
       console.log(error);
       // Error is handled in the auth context
@@ -106,25 +104,15 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
     setErrors({});
   };
 
-  if (!isOpen) return null;
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter") {
+      handleSubmit();
+    }
+  };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
-      <div
-        className="absolute inset-0 bg-black/50 backdrop-blur-sm"
-        onClick={onClose}
-      />
-
-      <div className="relative w-full max-w-md mx-4 bg-background rounded-2xl shadow-2xl overflow-hidden">
-        <button
-          onClick={onClose}
-          className="absolute top-4 right-4 z-10 p-2 rounded-full hover:bg-secondary/50 transition-colors"
-        >
-          <X className="w-5 h-5" />
-        </button>
-
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-background to-secondary/30" />
-
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/5 via-background to-secondary/30 p-4">
+      <div className="w-full max-w-md bg-background rounded-2xl shadow-2xl overflow-hidden">
         <div className="relative p-8">
           <div className="mb-8">
             <h2 className="text-3xl font-bold text-center mb-2 bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
@@ -163,7 +151,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
           </div>
 
           {activeTab === "login" && (
-            <div className="space-y-4">
+            <div className="space-y-4" onKeyPress={handleKeyPress}>
               <div className="space-y-2">
                 <label
                   htmlFor="login-email"
@@ -245,7 +233,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
           )}
 
           {activeTab === "register" && (
-            <div className="space-y-4">
+            <div className="space-y-4" onKeyPress={handleKeyPress}>
               <div className="space-y-2">
                 <label
                   htmlFor="register-username"
@@ -389,3 +377,5 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
     </div>
   );
 };
+
+export default AuthPage;

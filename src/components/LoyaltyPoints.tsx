@@ -1,10 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Award, Sparkles, ChevronDown } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import { useAuth } from "@/contexts/authContext";
 import { AuthModal } from "./AuthModal";
-import { Skeleton } from "@/components/ui/skeleton";
 import axios from "axios";
 
 export const LoyaltyPoints: React.FC = () => {
@@ -13,6 +10,7 @@ export const LoyaltyPoints: React.FC = () => {
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [showDetails, setShowDetails] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
 
   const fetchLoyaltyPoints = async () => {
     if (!isAuthenticated) return;
@@ -29,7 +27,6 @@ export const LoyaltyPoints: React.FC = () => {
           headers: { Authorization: `Bearer ${token}` },
         },
       );
-      console.log(response);
       setPoints(response.data.loyaltyPoints || 0);
     } catch (error) {
       console.error("Error fetching loyalty points:", error);
@@ -49,6 +46,7 @@ export const LoyaltyPoints: React.FC = () => {
       setShowAuthModal(true);
     } else {
       setShowDetails(!showDetails);
+      setDropdownOpen(!dropdownOpen);
     }
   };
 
@@ -60,13 +58,30 @@ export const LoyaltyPoints: React.FC = () => {
 
   const rewardTier = getRewardTier();
 
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as HTMLElement;
+      if (!target.closest(".loyalty-container") && dropdownOpen) {
+        setShowDetails(false);
+        setDropdownOpen(false);
+      }
+    };
+
+    if (dropdownOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+      return () => {
+        document.removeEventListener("mousedown", handleClickOutside);
+      };
+    }
+  }, [dropdownOpen]);
+
   return (
     <>
-      <div className="relative">
-        <Button
-          variant="outline"
-          className="h-12 px-4 rounded-full border-2 border-white/30 bg-white/10 hover:bg-white/20 text-white hover:text-white transition-all duration-300 group relative overflow-hidden"
+      <div className="relative loyalty-container">
+        <button
           onClick={handlePointsClick}
+          className="h-12 px-4 rounded-full border-2 border-white/30 bg-white/10 hover:bg-white/20 text-white hover:text-white transition-all duration-300 group relative overflow-hidden"
         >
           {/* Animated background effect */}
           <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/10 to-white/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
@@ -81,7 +96,7 @@ export const LoyaltyPoints: React.FC = () => {
 
             <div className="flex flex-col items-start">
               {loading ? (
-                <Skeleton className="h-4 w-16 bg-white/30" />
+                <div className="h-4 w-16 bg-white/30 rounded animate-pulse" />
               ) : (
                 <span className="text-sm font-semibold">
                   {isAuthenticated ? `${points} Points` : "Earn Points"}
@@ -98,20 +113,20 @@ export const LoyaltyPoints: React.FC = () => {
               />
             )}
           </div>
-        </Button>
+        </button>
 
         {/* Points Details Dropdown */}
         {showDetails && isAuthenticated && (
-          <Card className="absolute top-full right-0 mt-2 w-80 z-50 animate-in slide-in-from-top-5 bg-white border-[#A63872]/20 shadow-lg">
-            <CardContent className="p-6">
+          <div className="absolute top-full right-0 mt-2 w-80 z-50 animate-in slide-in-from-top-5 bg-white border border-[#A63872]/20 shadow-lg rounded-xl overflow-hidden">
+            <div className="p-6">
               <div className="space-y-4">
                 {/* Header */}
                 <div className="flex items-center justify-between">
                   <div>
-                    <h3 className="font-bold text-lg text-gray-900">Loyalty Rewards</h3>
-                    <p className="text-sm text-gray-500">
-                      Your current status
-                    </p>
+                    <h3 className="font-bold text-lg text-gray-900">
+                      Loyalty Rewards
+                    </h3>
+                    <p className="text-sm text-gray-500">Your current status</p>
                   </div>
                   <div className={`text-2xl font-bold ${rewardTier.color}`}>
                     {points}
@@ -122,7 +137,9 @@ export const LoyaltyPoints: React.FC = () => {
                 <div className="space-y-2">
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-700">Progress to next tier</span>
-                    <span className="text-[#A63872] font-medium">{points % 100}/100</span>
+                    <span className="text-[#A63872] font-medium">
+                      {points % 100}/100
+                    </span>
                   </div>
                   <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
                     <div
@@ -135,9 +152,7 @@ export const LoyaltyPoints: React.FC = () => {
                 {/* Points Info */}
                 <div className="grid grid-cols-2 gap-3 pt-2">
                   <div className="space-y-1">
-                    <p className="text-xs text-gray-500">
-                      Points Value
-                    </p>
+                    <p className="text-xs text-gray-500">Points Value</p>
                     <p className="font-semibold text-[#A63872]">
                       £{(points * 0.1).toFixed(2)}
                     </p>
@@ -152,9 +167,7 @@ export const LoyaltyPoints: React.FC = () => {
 
                 {/* How It Works */}
                 <div className="pt-4 border-t border-gray-200">
-                  <p className="text-xs text-gray-500 mb-2">
-                    How it works:
-                  </p>
+                  <p className="text-xs text-gray-500 mb-2">How it works:</p>
                   <ul className="text-xs space-y-1">
                     <li className="flex items-center gap-1 text-gray-700">
                       <div className="h-1 w-1 rounded-full bg-[#A63872]" />
@@ -171,8 +184,8 @@ export const LoyaltyPoints: React.FC = () => {
                   </ul>
                 </div>
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         )}
       </div>
 

@@ -33,7 +33,7 @@ api.interceptors.response.use(
 
       if (error.response.status === 401) {
         localStorage.removeItem("token");
-        window.location.href = "/login";
+        // window.location.href = "/login";
       }
     } else if (error.request) {
       console.error("Network Error:", error.message);
@@ -460,7 +460,9 @@ export const orderAPI = {
   },
 
   // Get order tracking
-  getOrderTracking: async (orderId: string): Promise<{
+  getOrderTracking: async (
+    orderId: string,
+  ): Promise<{
     orderId: string;
     orderNumber: string;
     status: string;
@@ -501,7 +503,7 @@ export const authAPI = {
   },
 
   getProfile: async (): Promise<any> => {
-    const response = await api.get("/user/profile");
+    const response = await api.get("/auth/profile");
     return response.data;
   },
 
@@ -510,7 +512,9 @@ export const authAPI = {
     return response.data;
   },
 
-  changePassword: async (passwordData: PasswordChangeData): Promise<{ message: string }> => {
+  changePassword: async (
+    passwordData: PasswordChangeData,
+  ): Promise<{ message: string }> => {
     const response = await api.put("/auth/change-password", passwordData);
     return response.data;
   },
@@ -529,7 +533,7 @@ export const authAPI = {
 export const userAPI = {
   // Get detailed user profile
   getProfile: async (): Promise<UserProfile> => {
-    const response = await api.get("/user/profile");
+    const response = await api.get("/auth/profile");
     return response.data;
   },
 
@@ -540,7 +544,9 @@ export const userAPI = {
     limit?: number;
     status?: string;
   }): Promise<UserOrdersResponse> => {
-    console.warn("userAPI.getOrders() is deprecated. Use orderAPI.getOrderHistory() instead.");
+    console.warn(
+      "userAPI.getOrders() is deprecated. Use orderAPI.getOrderHistory() instead.",
+    );
     const response = await api.get("/orders/history", { params });
     return response.data;
   },
@@ -552,13 +558,17 @@ export const userAPI = {
   },
 
   // Update user profile
-  updateProfile: async (userData: Partial<UserProfile>): Promise<UserProfile> => {
+  updateProfile: async (
+    userData: Partial<UserProfile>,
+  ): Promise<UserProfile> => {
     const response = await api.put("/auth/profile", userData);
     return response.data;
   },
 
   // Change password
-  changePassword: async (passwordData: PasswordChangeData): Promise<{ message: string }> => {
+  changePassword: async (
+    passwordData: PasswordChangeData,
+  ): Promise<{ message: string }> => {
     const response = await api.put("/auth/change-password", passwordData);
     return response.data;
   },
@@ -570,7 +580,9 @@ export const userAPI = {
   },
 
   // Get order tracking
-  getOrderTracking: async (orderId: string): Promise<{
+  getOrderTracking: async (
+    orderId: string,
+  ): Promise<{
     orderId: string;
     orderNumber: string;
     status: string;
@@ -654,13 +666,24 @@ export const cartAPI = {
   },
 
   // Add item to cart
-  addToCart: async (menuItemId: string, quantity: number = 1, customizations: any = {}): Promise<any> => {
-    const response = await api.post("/cart/add", { menuItemId, quantity, customizations });
+  addToCart: async (
+    menuItemId: string,
+    quantity: number = 1,
+    customizations: any = {},
+  ): Promise<any> => {
+    const response = await api.post("/cart/add", {
+      menuItemId,
+      quantity,
+      customizations,
+    });
     return response.data;
   },
 
   // Update cart item quantity
-  updateCartItem: async (cartItemId: string, quantity: number): Promise<any> => {
+  updateCartItem: async (
+    cartItemId: string,
+    quantity: number,
+  ): Promise<any> => {
     const response = await api.put("/cart/update", { cartItemId, quantity });
     return response.data;
   },
@@ -743,7 +766,9 @@ export const calculateLocalDiscount = (
 };
 
 // Password validation utility
-export const validatePassword = (password: string): {
+export const validatePassword = (
+  password: string,
+): {
   isValid: boolean;
   requirements: Array<{ met: boolean; text: string }>;
 } => {
@@ -754,32 +779,37 @@ export const validatePassword = (password: string): {
   const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(password);
 
   return {
-    isValid: password.length >= minLength && hasUpperCase && hasLowerCase && hasNumbers && hasSpecialChar,
+    isValid:
+      password.length >= minLength &&
+      hasUpperCase &&
+      hasLowerCase &&
+      hasNumbers &&
+      hasSpecialChar,
     requirements: [
       { met: password.length >= minLength, text: "At least 8 characters" },
       { met: hasUpperCase, text: "One uppercase letter" },
       { met: hasLowerCase, text: "One lowercase letter" },
       { met: hasNumbers, text: "One number" },
       { met: hasSpecialChar, text: "One special character" },
-    ]
+    ],
   };
 };
 
 // Format date utility
 export const formatDate = (dateString: string): string => {
   const date = new Date(dateString);
-  return date.toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric'
+  return date.toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
   });
 };
 
 // Format currency utility
 export const formatCurrency = (amount: number): string => {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
   }).format(amount);
 };
 

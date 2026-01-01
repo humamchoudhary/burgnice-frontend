@@ -1,21 +1,32 @@
 import { useEffect, useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
 import { MenuItemType, convertMenuItem } from "@/components/MenuItem";
 import { menuItemAPI } from "@/services/api";
-import { Minus, Plus } from "lucide-react";
+import { Minus, Plus, X } from "lucide-react";
 import { toast } from "sonner";
+
+const UPLOAD_BASE_URL =
+  import.meta.env.VITE_SERVER_BASE_URL || "http://localhost:5000";
 
 interface ItemDetailsModalProps {
   item: MenuItemType | null;
   onClose: () => void;
-  onAddToCart: (item: MenuItemType) => void; // still needed for parent updates if required
+  onAddToCart: (item: MenuItemType) => void;
 }
 
-export const ItemDetailsModal = ({ item, onClose, onAddToCart }: ItemDetailsModalProps) => {
+export const ItemDetailsModal = ({
+  item,
+  onClose,
+  onAddToCart,
+}: ItemDetailsModalProps) => {
   const [suggestions, setSuggestions] = useState<MenuItemType[]>([]);
   const [loading, setLoading] = useState(false);
   const [quantity, setQuantity] = useState(1);
+  const [isOpen, setIsOpen] = useState(!!item);
+
+  // Update open state when item changes
+  useEffect(() => {
+    setIsOpen(!!item);
+  }, [item]);
 
   // Fetch suggestions
   useEffect(() => {
@@ -27,7 +38,14 @@ export const ItemDetailsModal = ({ item, onClose, onAddToCart }: ItemDetailsModa
         const converted = allItems.map(convertMenuItem);
         const filtered = converted.filter((i) => {
           const cat = i.category?.toLowerCase();
-          return ["fries", "addons", "drinks", "drink", "other", "others"].includes(cat);
+          return [
+            "fries",
+            "addons",
+            "drinks",
+            "drink",
+            "other",
+            "others",
+          ].includes(cat);
         });
         setSuggestions(filtered);
       } catch (err) {
@@ -39,134 +57,128 @@ export const ItemDetailsModal = ({ item, onClose, onAddToCart }: ItemDetailsModa
     fetchSuggestions();
   }, [item]);
 
-  if (!item) return null;
+  // Close modal when Escape key is pressed
+  useEffect(() => {
+    const handleEscapeKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape" && isOpen) {
+        onClose();
+      }
+    };
+
+    if (isOpen) {
+      document.addEventListener("keydown", handleEscapeKey);
+      return () => {
+        document.removeEventListener("keydown", handleEscapeKey);
+      };
+    }
+  }, [isOpen, onClose]);
+
+  if (!item || !isOpen) return null;
 
   const handleAddToCart = () => {
     const existingCart = sessionStorage.getItem("cart");
-  const cartItems: (MenuItemType & { quantity: number })[] = existingCart
-    ? JSON.parse(existingCart)
-    : [];
-    // Check if item already exists in cart
+    const cartItems: (MenuItemType & { quantity: number })[] = existingCart
+      ? JSON.parse(existingCart)
+      : [];
     const existing = cartItems.find((i) => i.id === item.id);
     if (existing) {
-      existing.quantity += quantity; 
+      existing.quantity += quantity;
     } else {
-      cartItems.push({ ...item, quantity }); 
+      cartItems.push({ ...item, quantity });
     }
     sessionStorage.setItem("cart", JSON.stringify(cartItems));
     window.dispatchEvent(new Event("cart-updated"));
     toast.success(`Added ${item.name} to cart`);
   };
-  const addToCartSession = (menuItem: MenuItemType, qty = 1) =>{ 
+
+  const addToCartSession = (menuItem: MenuItemType, qty = 1) => {
     const existingCart = sessionStorage.getItem("cart");
     const cartItems: (MenuItemType & { quantity: number })[] = existingCart
-    ? JSON.parse(existingCart)
-    : [];
-    const existing = cartItems.find((i) => i.id === item.id);
+      ? JSON.parse(existingCart)
+      : [];
+    const existing = cartItems.find((i) => i.id === menuItem.id);
     if (existing) {
-      existing.quantity += quantity; 
+      existing.quantity += qty;
     } else {
-      cartItems.push({ ...item, quantity }); 
+      cartItems.push({ ...menuItem, quantity: qty });
     }
     sessionStorage.setItem("cart", JSON.stringify(cartItems));
-    window.dispatchEvent(new Event("cart-updated")); 
-    toast.success(`Added ${item.name} to cart`);
-  }
-  
+    window.dispatchEvent(new Event("cart-updated"));
+    toast.success(`Added ${menuItem.name} to cart`);
+  };
 
   return (
-    <Dialog open={!!item} onOpenChange={onClose}>
-      <DialogContent
-        className="max-w-3xl w-full mx-auto rounded-2xl p-6 md:p-8 bg-white shadow-lg 
-        overflow-hidden max-h-[75vh] flex flex-col"
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+      <div
+        className="relative max-w-3xl w-full mx-4 max-h-[75vh] bg-white rounded-2xl shadow-lg overflow-hidden flex flex-col"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="modal-title"
       >
-        <DialogHeader>
-          <DialogTitle className="text-2xl font-bold text-center md:text-left">{item.name}</DialogTitle>
-        </DialogHeader>
+        {/* Header */}
+        <div className="flex items-center justify-between p-6 md:p-8 border-b border-gray-200">
+          <h2 id="modal-title" className="text-2xl font-bold text-gray-900">
+            {item.name}
+          </h2>
+          <button
+            onClick={onClose}
+            className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
+            aria-label="Close modal"
+          >
+            <X className="h-5 w-5 text-gray-600" />
+          </button>
+        </div>
 
         {/* Scrollable Content */}
-        <div className="overflow-y-auto mt-4 pr-1">
+        <div className="overflow-y-auto flex-1 p-6 md:p-8">
           <div className="flex flex-col md:flex-row gap-8 items-start">
             {/* Left: Image */}
             <img
-              src={item.image}
+              src={`${UPLOAD_BASE_URL}${item.image}`}
               alt={item.name}
-              className="w-full md:w-1/2 h-56 object-cover rounded-2xl"
+              className="w-full md:w-1/2 h-96 object-cover rounded-2xl"
             />
 
             {/* Right: Details */}
             <div className="flex-1 flex flex-col justify-between">
-              <p className="text-muted-foreground mb-3">{item.description}</p>
+              <p className="text-gray-600 mb-3">{item.description}</p>
               <p className="text-2xl font-semibold mb-4 text-primary">
                 £{item.price.toFixed(2)}
               </p>
 
               {/* Quantity Controls */}
               <div className="flex items-center gap-4 mb-6">
-                <Button
-                  variant="outline"
-                  size="icon"
+                <button
                   onClick={() => setQuantity((q) => Math.max(1, q - 1))}
+                  className="p-2 rounded-lg border border-gray-300 hover:bg-gray-50 transition-colors"
+                  aria-label="Decrease quantity"
                 >
-                  <Minus className="h-4 w-4" />
-                </Button>
-                <span className="text-lg font-semibold w-6 text-center">{quantity}</span>
-                <Button
-                  variant="outline"
-                  size="icon"
+                  <Minus className="h-4 w-4 text-gray-700" />
+                </button>
+                <span className="text-lg font-semibold w-6 text-center text-gray-900">
+                  {quantity}
+                </span>
+                <button
                   onClick={() => setQuantity((q) => q + 1)}
+                  className="p-2 rounded-lg border border-gray-300 hover:bg-gray-50 transition-colors"
+                  aria-label="Increase quantity"
                 >
-                  <Plus className="h-4 w-4" />
-                </Button>
+                  <Plus className="h-4 w-4 text-gray-700" />
+                </button>
               </div>
 
-              <Button onClick={handleAddToCart} className="w-full md:w-auto">
+              <button
+                onClick={handleAddToCart}
+                className="px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors font-medium w-full md:w-auto"
+              >
                 Add {quantity > 1 ? `${quantity} to Cart` : "to Cart"}
-              </Button>
+              </button>
             </div>
           </div>
 
           {/* Suggested Items Section */}
-          <div className="mt-10">
-            <h3 className="text-xl font-semibold mb-4">Add a Side or Drink</h3>
-
-            {loading ? (
-              <p className="text-muted-foreground">Loading suggestions...</p>
-            ) : suggestions.length > 0 ? (
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-5">
-                {suggestions.slice(0, 6).map((s) => (
-                  <div
-                    key={s.id}
-                    className="group relative p-3 border rounded-xl hover:shadow-md transition-all"
-                  >
-                    <img
-                      src={s.image}
-                      alt={s.name}
-                      className="w-full h-28 object-cover rounded-lg mb-2"
-                    />
-                    <div className="flex flex-col items-center">
-                      <p className="text-sm font-medium">{s.name}</p>
-                      <p className="text-xs text-muted-foreground mb-2">
-                        £{s.price.toFixed(2)}
-                      </p>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => addToCartSession(s, 1)}
-                        className="bg-primary text-white hover:bg-primary/90"
-                      >
-                        <Plus className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <p className="text-muted-foreground">No suggestions available.</p>
-            )}
-          </div>
         </div>
-      </DialogContent>
-    </Dialog>
+      </div>
+    </div>
   );
 };

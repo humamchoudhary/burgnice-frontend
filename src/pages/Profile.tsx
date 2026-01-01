@@ -1,67 +1,75 @@
 import React, { useEffect, useState } from "react";
 import { useAuth } from "@/contexts/authContext";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import {Mail, Award, Shield, Edit } from "lucide-react";
-import { Skeleton } from "@/components/ui/skeleton";
+import {
+  Mail,
+  Award,
+  Shield,
+  Edit,
+  ShoppingBag,
+  Settings,
+  Package,
+} from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { ShoppingBag, Settings, Package } from "lucide-react";
-import  api  from "@/services/api";
+import api from "@/services/api";
+
 const ProfilePage: React.FC = () => {
   const { user, loading } = useAuth();
   const navigate = useNavigate();
   const [profileData, setProfileData] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-useEffect(() => {
-  const fetchProfileData = async () => {
-    if (user && !loading) {
-      try {
-        // Use the new user profile API
-        const response = await api.get('/user/profile');
-        setProfileData(response.data);
-      } catch (error) {
-        console.error('Error fetching profile:', error);
-        // Fallback to auth context data
-        setProfileData({
-          ...user,
-          joinDate: new Date(user.createdAt || Date.now()).toLocaleDateString(),
-          totalOrders: 0,
-          tier: user.loyaltyPoints > 1000 ? "Gold" : user.loyaltyPoints > 500 ? "Silver" : "Bronze"
-        });
+  useEffect(() => {
+    const fetchProfileData = async () => {
+      if (user && !loading) {
+        try {
+          const response = await api.get("/user/profile");
+          setProfileData(response.data);
+        } catch (error) {
+          console.error("Error fetching profile:", error);
+          setProfileData({
+            ...user,
+            joinDate: new Date(
+              user.createdAt || Date.now(),
+            ).toLocaleDateString(),
+            totalOrders: 0,
+            tier:
+              user.loyaltyPoints > 1000
+                ? "Gold"
+                : user.loyaltyPoints > 500
+                  ? "Silver"
+                  : "Bronze",
+          });
+        }
+        setIsLoading(false);
+      } else if (!loading && !user) {
+        navigate("/login");
       }
-      setIsLoading(false);
-    } else if (!loading && !user) {
-      navigate("/login");
-    }
-  };
+    };
 
-  if (user) {
-    fetchProfileData();
-  }
-}, [user, loading, navigate]);
+    if (user) {
+      fetchProfileData();
+    }
+  }, [user, loading, navigate]);
 
   if (loading || isLoading) {
     return (
       <div className="container mx-auto px-4 py-8 max-w-4xl">
         <div className="mb-8">
-          <Skeleton className="h-8 w-48 mb-2" />
-          <Skeleton className="h-4 w-96" />
+          <div className="h-8 w-48 bg-gray-200 dark:bg-gray-800 rounded animate-pulse mb-2"></div>
+          <div className="h-4 w-96 bg-gray-200 dark:bg-gray-800 rounded animate-pulse"></div>
         </div>
-        <Card>
-          <CardHeader>
-            <Skeleton className="h-6 w-32" />
-          </CardHeader>
-          <CardContent>
+        <div className="bg-white dark:bg-gray-900 rounded-xl shadow-md border border-gray-200 dark:border-gray-800">
+          <div className="p-6 pb-3">
+            <div className="h-6 w-32 bg-gray-200 dark:bg-gray-800 rounded animate-pulse"></div>
+          </div>
+          <div className="p-6 pt-0">
             <div className="space-y-4">
-              <Skeleton className="h-20 w-full" />
-              <Skeleton className="h-20 w-full" />
-              <Skeleton className="h-20 w-full" />
+              <div className="h-20 w-full bg-gray-200 dark:bg-gray-800 rounded animate-pulse"></div>
+              <div className="h-20 w-full bg-gray-200 dark:bg-gray-800 rounded animate-pulse"></div>
+              <div className="h-20 w-full bg-gray-200 dark:bg-gray-800 rounded animate-pulse"></div>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </div>
     );
   }
@@ -74,8 +82,10 @@ useEffect(() => {
     <div className="container mx-auto px-4 py-8 max-w-4xl">
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-3xl font-bold tracking-tight">My Profile</h1>
-        <p className="text-muted-foreground mt-2">
+        <h1 className="text-3xl font-bold tracking-tight text-gray-900 dark:text-white">
+          My Profile
+        </h1>
+        <p className="text-gray-600 dark:text-gray-400 mt-2">
           Manage your account information and preferences
         </p>
       </div>
@@ -84,70 +94,78 @@ useEffect(() => {
         {/* Left Column - Profile Overview */}
         <div className="lg:col-span-2 space-y-6">
           {/* Personal Info Card */}
-          <Card className="border-0 shadow-md">
-            <CardHeader className="pb-3">
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-xl">Personal Information</CardTitle>
-                <Button
-                  variant="outline"
-                  size="sm"
+          <div className="bg-white dark:bg-gray-900 rounded-xl shadow-md border border-gray-200 dark:border-gray-800">
+            <div className="p-6 pb-3">
+              <div className="flex items-center justify-between mb-2">
+                <h2 className="text-xl font-bold text-gray-900 dark:text-white">
+                  Personal Information
+                </h2>
+                <button
                   onClick={() => navigate("/settings")}
-                  className="gap-2"
+                  className="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors text-sm"
                 >
                   <Edit className="h-4 w-4" />
                   Edit
-                </Button>
+                </button>
               </div>
-              <CardDescription>
+              <p className="text-gray-600 dark:text-gray-400">
                 Your basic profile information
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
+              </p>
+            </div>
+            <div className="p-6 pt-0">
               <div className="space-y-6">
                 <div className="flex items-start gap-4">
-                  <Avatar className="h-16 w-16">
-                    <AvatarFallback className="text-lg bg-primary/10 text-primary">
-                      {user.username?.charAt(0).toUpperCase() || 'U'}
-                    </AvatarFallback>
-                  </Avatar>
+                  <div className="h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center">
+                    <span className="text-lg font-semibold text-primary">
+                      {user.username?.charAt(0).toUpperCase() || "U"}
+                    </span>
+                  </div>
                   <div>
-                    <h3 className="text-lg font-semibold">{user.username || 'User'}</h3>
-                    <p className="text-sm text-muted-foreground">Member since {profileData?.joinDate}</p>
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                      {user.username || "User"}
+                    </h3>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                      Member since {profileData?.joinDate}
+                    </p>
                   </div>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
                       <Mail className="h-4 w-4" />
                       <span>Email Address</span>
                     </div>
-                    <p className="font-medium">{user.email || 'No email provided'}</p>
+                    <p className="font-medium text-gray-900 dark:text-white">
+                      {user.email || "No email provided"}
+                    </p>
                   </div>
 
                   <div className="space-y-2">
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
                       <Shield className="h-4 w-4" />
                       <span>Account Tier</span>
                     </div>
-                    <Badge variant="outline" className="capitalize">
+                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 capitalize">
                       {profileData?.tier}
-                    </Badge>
+                    </span>
                   </div>
                 </div>
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
 
           {/* Loyalty Points Card */}
-          <Card className="border-0 shadow-md">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-xl">Loyalty Points</CardTitle>
-              <CardDescription>
+          <div className="bg-white dark:bg-gray-900 rounded-xl shadow-md border border-gray-200 dark:border-gray-800">
+            <div className="p-6 pb-3">
+              <h2 className="text-xl font-bold text-gray-900 dark:text-white">
+                Loyalty Points
+              </h2>
+              <p className="text-gray-600 dark:text-gray-400">
                 Earn points with every purchase
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
+              </p>
+            </div>
+            <div className="p-6 pt-0">
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
@@ -155,95 +173,116 @@ useEffect(() => {
                     <span className="text-2xl font-bold text-primary">
                       {user.loyaltyPoints || 0}
                     </span>
-                    <span className="text-muted-foreground">points</span>
+                    <span className="text-gray-600 dark:text-gray-400">
+                      points
+                    </span>
                   </div>
-                  <Badge className="bg-primary/10 text-primary hover:bg-primary/20">
+                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary/10 text-primary border border-primary/20">
                     {profileData?.tier} Member
-                  </Badge>
+                  </span>
                 </div>
 
                 <div className="space-y-2">
                   <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">Progress to next tier</span>
-                    <span className="font-medium">
-                      {user.loyaltyPoints || 0} / {profileData?.tier === "Bronze" ? 500 : profileData?.tier === "Silver" ? 1000 : "∞"}
+                    <span className="text-gray-600 dark:text-gray-400">
+                      Progress to next tier
+                    </span>
+                    <span className="font-medium text-gray-900 dark:text-white">
+                      {user.loyaltyPoints || 0} /{" "}
+                      {profileData?.tier === "Bronze"
+                        ? 500
+                        : profileData?.tier === "Silver"
+                          ? 1000
+                          : "∞"}
                     </span>
                   </div>
-                  <div className="h-2 bg-secondary rounded-full overflow-hidden">
+                  <div className="h-2 bg-gray-200 dark:bg-gray-800 rounded-full overflow-hidden">
                     <div
                       className="h-full bg-gradient-to-r from-primary to-primary/70 rounded-full"
                       style={{
-                        width: `${Math.min((user.loyaltyPoints || 0) % (profileData?.tier === "Bronze" ? 500 : 1000), 100)}%`
+                        width: `${Math.min((user.loyaltyPoints || 0) % (profileData?.tier === "Bronze" ? 500 : 1000), 100)}%`,
                       }}
                     />
                   </div>
-                  <p className="text-xs text-muted-foreground">
-                    {profileData?.tier === "Gold" 
+                  <p className="text-xs text-gray-600 dark:text-gray-400">
+                    {profileData?.tier === "Gold"
                       ? "You've reached the highest tier!"
-                      : `Need ${(profileData?.tier === "Bronze" ? 500 : 1000) - (user.loyaltyPoints || 0)} more points for ${profileData?.tier === "Bronze" ? "Silver" : "Gold"} tier`
-                    }
+                      : `Need ${(profileData?.tier === "Bronze" ? 500 : 1000) - (user.loyaltyPoints || 0)} more points for ${profileData?.tier === "Bronze" ? "Silver" : "Gold"} tier`}
                   </p>
                 </div>
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         </div>
 
         {/* Right Column - Stats & Actions */}
         <div className="space-y-6">
           {/* Quick Stats */}
-          <Card className="border-0 shadow-md">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-lg">Quick Stats</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
+          <div className="bg-white dark:bg-gray-900 rounded-xl shadow-md border border-gray-200 dark:border-gray-800">
+            <div className="p-6 pb-3">
+              <h2 className="text-lg font-bold text-gray-900 dark:text-white">
+                Quick Stats
+              </h2>
+            </div>
+            <div className="p-6 pt-0 space-y-4">
               <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">Total Orders</span>
-                <span className="font-bold">{profileData?.totalOrders || 0}</span>
+                <span className="text-sm text-gray-600 dark:text-gray-400">
+                  Total Orders
+                </span>
+                <span className="font-bold text-gray-900 dark:text-white">
+                  {profileData?.totalOrders || 0}
+                </span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">Points Earned</span>
-                <span className="font-bold text-primary">{user.loyaltyPoints || 0}</span>
+                <span className="text-sm text-gray-600 dark:text-gray-400">
+                  Points Earned
+                </span>
+                <span className="font-bold text-primary">
+                  {user.loyaltyPoints || 0}
+                </span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">Member Since</span>
-                <span className="font-medium">{profileData?.joinDate}</span>
+                <span className="text-sm text-gray-600 dark:text-gray-400">
+                  Member Since
+                </span>
+                <span className="font-medium text-gray-900 dark:text-white">
+                  {profileData?.joinDate}
+                </span>
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
 
           {/* Quick Actions */}
-          <Card className="border-0 shadow-md">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-lg">Quick Actions</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <Button 
-                variant="outline" 
-                className="w-full justify-start"
+          <div className="bg-white dark:bg-gray-900 rounded-xl shadow-md border border-gray-200 dark:border-gray-800">
+            <div className="p-6 pb-3">
+              <h2 className="text-lg font-bold text-gray-900 dark:text-white">
+                Quick Actions
+              </h2>
+            </div>
+            <div className="p-6 pt-0 space-y-3">
+              <button
                 onClick={() => navigate("/orders")}
+                className="w-full flex items-center justify-start px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
               >
                 <Package className="h-4 w-4 mr-2" />
                 View Orders
-              </Button>
-              <Button 
-                variant="outline" 
-                className="w-full justify-start"
+              </button>
+              <button
                 onClick={() => navigate("/settings")}
+                className="w-full flex items-center justify-start px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
               >
                 <Settings className="h-4 w-4 mr-2" />
                 Account Settings
-              </Button>
-              <Button 
-                variant="outline" 
-                className="w-full justify-start"
-                onClick={() => navigate("/shop")}
+              </button>
+              <button
+                onClick={() => navigate("/")}
+                className="w-full flex items-center justify-start px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
               >
                 <ShoppingBag className="h-4 w-4 mr-2" />
                 Continue Shopping
-              </Button>
-            </CardContent>
-          </Card>
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </div>

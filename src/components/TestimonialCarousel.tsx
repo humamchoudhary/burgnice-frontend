@@ -1,8 +1,5 @@
 import { useEffect, useState } from "react";
 import { Star, ChevronLeft, ChevronRight, Sparkles } from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { ReviewModal, ReviewData } from "@/components/ReviewModal";
 import { toast } from "sonner";
 
@@ -16,7 +13,7 @@ interface Testimonial {
   type?: string;
 }
 
-const testimonials: Testimonial[] = [
+const initialTestimonials: Testimonial[] = [
   {
     name: "Sarah M.",
     rating: 5,
@@ -78,6 +75,11 @@ export const TestimonialCarousel = () => {
   const [isAutoPlaying, setIsAutoPlaying] = useState(true);
   const [itemsToShow, setItemsToShow] = useState(3);
   const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
+  const [testimonials, setTestimonials] = useState<Testimonial[]>(() => {
+    // Load saved reviews from localStorage on initial render
+    const savedReviews = localStorage.getItem("burgNiceReviews");
+    return savedReviews ? JSON.parse(savedReviews) : initialTestimonials;
+  });
 
   useEffect(() => {
     const updateItemsToShow = () => {
@@ -115,7 +117,7 @@ export const TestimonialCarousel = () => {
     }, 5000);
 
     return () => clearInterval(interval);
-  }, [currentIndex, isAutoPlaying]);
+  }, [currentIndex, isAutoPlaying, testimonials.length]);
 
   const visibleTestimonials = testimonials.slice(
     currentIndex,
@@ -134,9 +136,34 @@ export const TestimonialCarousel = () => {
   const handleReviewSubmit = async (reviewData: ReviewData) => {
     return new Promise<void>((resolve) => {
       setTimeout(() => {
-        console.log("Review submitted:", reviewData);
+        // Create new testimonial from review data
+        const newTestimonial: Testimonial = {
+          name: reviewData.name,
+          rating: reviewData.rating,
+          text: reviewData.comment,
+          date: "Just now",
+          initials: reviewData.name
+            .split(" ")
+            .map((n) => n[0])
+            .join("")
+            .toUpperCase(),
+          location: reviewData.location || "Manchester",
+          type: "Recent Reviewer",
+        };
+
+        // Add new testimonial to the beginning of the list
+        const updatedTestimonials = [newTestimonial, ...testimonials];
+        setTestimonials(updatedTestimonials);
+
+        // Save to localStorage
+        localStorage.setItem(
+          "burgNiceReviews",
+          JSON.stringify(updatedTestimonials),
+        );
+
+        console.log("Review saved:", newTestimonial);
         toast.success(
-          "Thank you for your review! It will appear after moderation.",
+          "Thank you for your review! It has been added to our testimonials.",
         );
         resolve();
       }, 1500);
@@ -144,10 +171,10 @@ export const TestimonialCarousel = () => {
   };
 
   return (
-    <section className="py-24  bg-background overflow-hidden">
+    <section className="py-24 bg-white dark:bg-gray-900 overflow-hidden">
       {/* Background decoration */}
-      <div className="absolute inset-0 bg-gradient-to-b from-background via-secondary/5 to-transparent"></div>
-      <div className="absolute bottom-20 right-10 w-96 h-96 bg-secondary/5 rounded-full blur-3xl"></div>
+      <div className="absolute inset-0 bg-gradient-to-b from-white dark:from-gray-900 via-primary/5 to-transparent"></div>
+      <div className="absolute bottom-20 right-10 w-96 h-96 bg-primary/5 rounded-full blur-3xl"></div>
 
       <div className="relative container mx-auto px-4">
         <div className="max-w-4xl mx-auto text-center mb-16">
@@ -158,14 +185,14 @@ export const TestimonialCarousel = () => {
             </span>
           </div>
 
-          <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 text-foreground">
+          <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 text-gray-900 dark:text-white">
             Loved by{" "}
             <span className="bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
               Northwich
             </span>
           </h2>
 
-          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+          <p className="text-xl text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
             Hear what our customers have to say about their Burg N Ice
             experience
           </p>
@@ -184,22 +211,22 @@ export const TestimonialCarousel = () => {
                 className="animate-fade-in"
                 style={{ animationDelay: `${index * 100}ms` }}
               >
-                <Card className="h-full group border-0 bg-gradient-to-b from-background to-accent/5 hover:to-primary/5 transition-all duration-500 hover:shadow-2xl hover:-translate-y-2">
-                  <CardContent className="p-6 md:p-8">
+                <div className="h-full group bg-gradient-to-b from-white dark:from-gray-900 to-primary/5 hover:to-primary/10 transition-all duration-500 hover:shadow-2xl hover:-translate-y-2 rounded-xl border border-gray-200 dark:border-gray-800">
+                  <div className="p-6 md:p-8">
                     <div className="relative">
                       {/* Customer Info */}
                       <div className="flex items-start gap-3 mb-4">
-                        <Avatar className="h-12 w-12 md:h-14 md:w-14 ring-2 ring-primary/20 group-hover:ring-primary/40 transition-all duration-300 flex-shrink-0">
-                          <AvatarFallback className="bg-gradient-to-br from-primary/20 to-primary/10 text-primary font-bold text-lg">
+                        <div className="h-12 w-12 md:h-14 md:w-14 rounded-full ring-2 ring-primary/20 group-hover:ring-primary/40 transition-all duration-300 flex-shrink-0 bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center">
+                          <span className="text-primary font-bold text-lg">
                             {testimonial.initials}
-                          </AvatarFallback>
-                        </Avatar>
+                          </span>
+                        </div>
 
                         <div className="flex-1 min-w-0 space-y-1">
                           {/* Name and Rating */}
                           <div className="flex items-start justify-between gap-2">
                             <div>
-                              <h4 className="font-bold text-foreground text-base md:text-lg truncate">
+                              <h4 className="font-bold text-gray-900 dark:text-white text-base md:text-lg truncate">
                                 {testimonial.name}
                               </h4>
                               {testimonial.type && (
@@ -215,7 +242,7 @@ export const TestimonialCarousel = () => {
                                   className={`h-3 w-3 md:h-4 md:w-4 ${
                                     i < testimonial.rating
                                       ? "fill-amber-500 text-amber-500"
-                                      : "fill-muted text-muted"
+                                      : "fill-gray-300 text-gray-300 dark:fill-gray-700 dark:text-gray-700"
                                   }`}
                                 />
                               ))}
@@ -223,7 +250,7 @@ export const TestimonialCarousel = () => {
                           </div>
 
                           {/* Location and Date */}
-                          <div className="flex items-center gap-1.5 text-xs md:text-sm text-muted-foreground">
+                          <div className="flex items-center gap-1.5 text-xs md:text-sm text-gray-600 dark:text-gray-400">
                             {testimonial.location && (
                               <>
                                 <span className="truncate">
@@ -239,13 +266,13 @@ export const TestimonialCarousel = () => {
 
                       {/* Testimonial Text */}
                       <div className="mt-4 md:mt-6">
-                        <p className="text-muted-foreground leading-relaxed italic text-sm md:text-base relative pl-4 border-l-2 border-primary/30">
+                        <p className="text-gray-600 dark:text-gray-400 leading-relaxed italic text-sm md:text-base relative pl-4 border-l-2 border-primary/30">
                           "{testimonial.text}"
                         </p>
                       </div>
                     </div>
-                  </CardContent>
-                </Card>
+                  </div>
+                </div>
               </div>
             ))}
           </div>
@@ -253,23 +280,19 @@ export const TestimonialCarousel = () => {
           {/* Navigation Buttons */}
           {testimonials.length > itemsToShow && (
             <>
-              <Button
-                variant="outline"
-                size="icon"
-                className="absolute left-0 top-1/4 -translate-y-1/2 -translate-x-4 lg:-translate-x-6 rounded-full shadow-2xl bg-background/95 backdrop-blur-sm border-2 hover:bg-primary hover:text-primary-foreground hover:scale-110 hover:shadow-primary/30 transition-all duration-300 group"
+              <button
+                className="absolute left-0 top-1/4 -translate-y-1/2 -translate-x-4 lg:-translate-x-6 rounded-full shadow-2xl bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm border-2 border-gray-300 dark:border-gray-700 hover:bg-primary hover:text-white hover:scale-110 hover:shadow-primary/30 transition-all duration-300 group p-3"
                 onClick={prevSlide}
               >
                 <ChevronLeft className="h-5 w-5 group-hover:-translate-x-0.5 transition-transform" />
-              </Button>
+              </button>
 
-              <Button
-                variant="outline"
-                size="icon"
-                className="absolute right-0 top-1/4 -translate-y-1/2 translate-x-4 lg:translate-x-6 rounded-full shadow-2xl bg-background/95 backdrop-blur-sm border-2 hover:bg-primary hover:text-primary-foreground hover:scale-110 hover:shadow-primary/30 transition-all duration-300 group"
+              <button
+                className="absolute right-0 top-1/4 -translate-y-1/2 translate-x-4 lg:translate-x-6 rounded-full shadow-2xl bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm border-2 border-gray-300 dark:border-gray-700 hover:bg-primary hover:text-white hover:scale-110 hover:shadow-primary/30 transition-all duration-300 group p-3"
                 onClick={nextSlide}
               >
                 <ChevronRight className="h-5 w-5 group-hover:translate-x-0.5 transition-transform" />
-              </Button>
+              </button>
 
               {/* Pagination Dots */}
               <div className="flex justify-center gap-3 mt-12">
@@ -281,7 +304,7 @@ export const TestimonialCarousel = () => {
                     className={`rounded-full transition-all duration-300 ${
                       Math.floor(currentIndex / itemsToShow) === index
                         ? "w-10 h-2 bg-gradient-to-r from-primary to-primary/80 shadow-md"
-                        : "w-2 h-2 bg-muted hover:bg-muted-foreground"
+                        : "w-2 h-2 bg-gray-300 dark:bg-gray-700 hover:bg-gray-400 dark:hover:bg-gray-600"
                     }`}
                     onClick={() => setCurrentIndex(index * itemsToShow)}
                   />
@@ -301,12 +324,12 @@ export const TestimonialCarousel = () => {
               ].map((stat, index) => (
                 <div
                   key={index}
-                  className="text-center p-4 rounded-2xl bg-gradient-to-b from-background to-accent/5 border border-accent/10 hover:border-accent/30 transition-all duration-300 hover:-translate-y-1"
+                  className="text-center p-4 rounded-2xl bg-gradient-to-b from-white dark:from-gray-900 to-primary/5 border border-primary/10 hover:border-primary/30 transition-all duration-300 hover:-translate-y-1"
                 >
                   <div className="text-2xl md:text-3xl font-bold text-primary mb-1">
                     {stat.value}
                   </div>
-                  <div className="text-xs text-muted-foreground">
+                  <div className="text-xs text-gray-600 dark:text-gray-400">
                     {stat.label}
                   </div>
                 </div>
@@ -317,19 +340,18 @@ export const TestimonialCarousel = () => {
 
         {/* Call to Action */}
         <div className="text-center mt-16">
-          <p className="text-lg text-muted-foreground mb-6">
+          <p className="text-lg text-gray-600 dark:text-gray-400 mb-6">
             Join our satisfied customers and share your Burg N Ice experience
           </p>
-          <Button
-            size="lg"
-            className="rounded-full px-8 bg-gradient-to-r from-primary to-primary/80 hover:from-primary hover:to-primary shadow-xl hover:shadow-primary/50 transition-all duration-300 hover:scale-105"
+          <button
+            className="rounded-full px-8 py-3 bg-gradient-to-r from-primary to-primary/80 hover:from-primary hover:to-primary text-white font-medium shadow-xl hover:shadow-primary/50 transition-all duration-300 hover:scale-105"
             onClick={() => setIsReviewModalOpen(true)}
           >
             <span className="flex items-center gap-2">
               Write a Review
               <Sparkles className="h-4 w-4" />
             </span>
-          </Button>
+          </button>
         </div>
       </div>
 

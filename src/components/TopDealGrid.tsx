@@ -16,28 +16,34 @@ const deals: Deal[] = [
     title: "The smash",
     description: "Good Burger",
     price: 15,
-    image: "https://images.unsplash.com/photo-1626082927389-6cd097cdc6ec?w=400&h=300&fit=crop",
+    image:
+      "https://images.unsplash.com/photo-1626082927389-6cd097cdc6ec?w=400&h=300&fit=crop",
   },
   {
     id: 2,
     title: "Value Bucket",
-    description: "Enjoy 9 pcs of our Signature Crispy Fried Chicken, hand-breaded in-house",
+    description:
+      "Enjoy 9 pcs of our Signature Crispy Fried Chicken, hand-breaded in-house",
     price: 80,
-    image: "https://images.unsplash.com/photo-1626645738196-c2a7c87a8f58?w=400&h=300&fit=crop",
+    image:
+      "https://images.unsplash.com/photo-1626645738196-c2a7c87a8f58?w=400&h=300&fit=crop",
   },
   {
     id: 3,
     title: "Loaded Fries",
     description: "Big Fries",
     price: 20,
-    image: "https://images.unsplash.com/photo-1606755962773-d324e0a13086?w=400&h=300&fit=crop",
+    image:
+      "https://images.unsplash.com/photo-1606755962773-d324e0a13086?w=400&h=300&fit=crop",
   },
   {
     id: 4,
     title: "Duo Box",
-    description: "The irresistible combo of 2 Signature smash burger + 2 loaded fries + drink",
+    description:
+      "The irresistible combo of 2 Signature smash burger + 2 loaded fries + drink",
     price: 30,
-    image: "https://images.unsplash.com/photo-1594212699903-ec8a3eca50f5?w=400&h=300&fit=crop",
+    image:
+      "https://images.unsplash.com/photo-1594212699903-ec8a3eca50f5?w=400&h=300&fit=crop",
   },
 ];
 
@@ -72,7 +78,10 @@ export default function TopDealsGrid({ onAddToCart }: TopDealsGridProps) {
         {/* Header */}
         <div className="mb-8">
           <h2 className="text-3xl font-bold text-gray-900">TOP DEALS</h2>
-          <div className="mt-1 w-16 h-1 rounded-full" style={{ backgroundColor: '#a63872' }} />
+          <div
+            className="mt-1 w-16 h-1 rounded-full"
+            style={{ backgroundColor: "#a63872" }}
+          />
         </div>
 
         {/* Deals Grid */}
@@ -83,32 +92,7 @@ export default function TopDealsGrid({ onAddToCart }: TopDealsGridProps) {
               className="bg-white rounded-lg overflow-hidden shadow-md hover:shadow-xl transition-shadow"
             >
               {/* Card Header with Badge and Favorite */}
-              <div className="relative p-4 pb-0">
-                <div className="flex items-start justify-between">
-                  {/* Badge */}
-                  <div className="flex gap-1">
-                    <div className="w-3 h-8 rounded-sm" style={{ backgroundColor: '#a63872' }} />
-                    <div className="w-3 h-8 rounded-sm" style={{ backgroundColor: '#a63872' }} />
-                    <div className="w-3 h-8 rounded-sm" style={{ backgroundColor: '#a63872' }} />
-                  </div>
-
-                  {/* Favorite Button */}
-                  <button
-                    onClick={() => toggleFavorite(deal.id)}
-                    className="p-2 rounded-full hover:bg-gray-100 transition-colors"
-                    aria-label="Add to favorites"
-                  >
-                    <Heart
-                      className={`h-6 w-6 transition-colors ${
-                        favorites.has(deal.id)
-                          ? "fill-current"
-                          : "stroke-current"
-                      }`}
-                      style={{ color: favorites.has(deal.id) ? '#a63872' : '#9ca3af' }}
-                    />
-                  </button>
-                </div>
-              </div>
+              <div className="relative p-4 pb-0"></div>
 
               {/* Image */}
               <div className="px-4 py-2">
@@ -141,9 +125,9 @@ export default function TopDealsGrid({ onAddToCart }: TopDealsGridProps) {
                 <button
                   onClick={() => handleAddToCart(deal)}
                   className="w-full text-white font-bold py-3 px-6 rounded-full transition-colors hover:opacity-90"
-                  style={{ backgroundColor: '#a63872' }}
+                  style={{ backgroundColor: "#a63872" }}
                 >
-                  + ADD TO BUCKET
+                  + ADD TO CART
                 </button>
               </div>
             </div>
