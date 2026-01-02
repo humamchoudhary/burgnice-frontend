@@ -173,8 +173,6 @@ export const TestimonialCarousel = () => {
   return (
     <section className="py-24 bg-white dark:bg-gray-900 overflow-hidden">
       {/* Background decoration */}
-      <div className="absolute inset-0 bg-gradient-to-b from-white dark:from-gray-900 via-primary/5 to-transparent"></div>
-      <div className="absolute bottom-20 right-10 w-96 h-96 bg-primary/5 rounded-full blur-3xl"></div>
 
       <div className="relative container mx-auto px-4">
         <div className="max-w-4xl mx-auto text-center mb-16">

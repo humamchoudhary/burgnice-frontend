@@ -18,7 +18,6 @@ export const About = () => {
       {/* Hero Section - Enhanced */}
       <section className="relative py-24 overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-white via-primary/40 to-gray-100/60 dark:from-gray-900 dark:via-primary/40 dark:to-gray-800/60"></div>
-        <div className="absolute top-0 left-0 w-full h-32 bg-gradient-to-b from-white dark:from-gray-900 to-transparent"></div>
 
         {/* Decorative elements */}
         <div className="absolute top-20 left-10 w-48 h-48 bg-primary/10 rounded-full blur-3xl"></div>
