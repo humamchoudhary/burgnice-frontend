@@ -23,6 +23,7 @@ export const Checkout = () => {
   const [useLoyaltyPoints, setUseLoyaltyPoints] = useState(false);
   const [discountAmount, setDiscountAmount] = useState(0);
   const [pointsUsed, setPointsUsed] = useState(0);
+  const [orderType, setOrderType] = useState<"delivery" | "pickup">("delivery");
   const [form, setForm] = useState({
     customerName: "",
     contactPhone: "",
@@ -36,6 +37,11 @@ export const Checkout = () => {
   useEffect(() => {
     const stored = sessionStorage.getItem("cart");
     const checkoutData = sessionStorage.getItem("checkoutData");
+    const savedOrderType = sessionStorage.getItem("orderType") as "delivery" | "pickup";
+
+    if (savedOrderType) {
+      setOrderType(savedOrderType);
+    }
 
     if (stored) {
       const cartItems = JSON.parse(stored);
@@ -64,6 +70,17 @@ export const Checkout = () => {
         customerName: user.username,
       }));
     }
+
+    // Listen for order type changes
+    const handleOrderTypeChange = (e: CustomEvent) => {
+      setOrderType(e.detail);
+    };
+
+    window.addEventListener("order-type-changed", handleOrderTypeChange as EventListener);
+
+    return () => {
+      window.removeEventListener("order-type-changed", handleOrderTypeChange as EventListener);
+    };
   }, [user]);
 
   const subtotal = items.reduce(
@@ -78,8 +95,15 @@ export const Checkout = () => {
   };
 
   const placeOrder = async () => {
-    if (!form.customerName || !form.contactPhone || !form.deliveryAddress) {
+    // Validate required fields based on order type
+    if (!form.customerName || !form.contactPhone) {
       toast.error("Please fill all required fields.");
+      return;
+    }
+
+    // Only require delivery address if order type is delivery
+    if (orderType === "delivery" && !form.deliveryAddress) {
+      toast.error("Please enter your delivery address.");
       return;
     }
 
@@ -100,13 +124,14 @@ export const Checkout = () => {
       discountAmount: discountAmount,
       loyaltyPointsUsed: pointsUsed,
       total: total,
-      deliveryAddress: form.deliveryAddress,
+      deliveryAddress: orderType === "delivery" ? form.deliveryAddress : "Pickup Order",
       paymentMethod: form.paymentMethod,
       notes: form.notes,
       contactPhone: form.contactPhone,
       customerName: form.customerName,
       status: "pending" as const,
       loyaltyPointsEarned: pointsEarned,
+      orderType: orderType, // Add order type to payload
     };
 
     setLoading(true);
@@ -156,7 +181,7 @@ export const Checkout = () => {
             <div className="bg-white dark:bg-gray-900 rounded-xl shadow-md border border-gray-200 dark:border-gray-800">
               <div className="p-6 pb-3">
                 <h2 className="text-xl font-bold text-gray-900 dark:text-white">
-                  Delivery Information
+                  {orderType === "delivery" ? "Delivery Information" : "Pickup Information"}
                 </h2>
               </div>
               <div className="p-6 pt-0 space-y-4">
@@ -198,24 +223,36 @@ export const Checkout = () => {
                   />
                 </div>
 
-                <div className="space-y-2">
-                  <label
-                    htmlFor="deliveryAddress"
-                    className="block text-sm font-medium text-gray-700 dark:text-gray-300"
-                  >
-                    Delivery Address *
-                  </label>
-                  <input
-                    id="deliveryAddress"
-                    type="text"
-                    placeholder="Street, City, House #"
-                    value={form.deliveryAddress}
-                    onChange={(e) =>
-                      updateField("deliveryAddress", e.target.value)
-                    }
-                    className="w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
-                  />
-                </div>
+                {/* Conditionally render delivery address only for delivery orders */}
+                {orderType === "delivery" && (
+                  <div className="space-y-2">
+                    <label
+                      htmlFor="deliveryAddress"
+                      className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+                    >
+                      Delivery Address *
+                    </label>
+                    <input
+                      id="deliveryAddress"
+                      type="text"
+                      placeholder="Street, City, House #"
+                      value={form.deliveryAddress}
+                      onChange={(e) =>
+                        updateField("deliveryAddress", e.target.value)
+                      }
+                      className="w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                    />
+                  </div>
+                )}
+
+                {/* Show pickup info message for pickup orders */}
+                {orderType === "pickup" && (
+                  <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+                    <p className="text-sm text-blue-800 dark:text-blue-300">
+                      📍 You'll receive a call when your order is ready for pickup at our location.
+                    </p>
+                  </div>
+                )}
 
                 <div className="space-y-2">
                   <label
@@ -242,7 +279,7 @@ export const Checkout = () => {
                   Payment Method
                 </h2>
               </div>
-              <div className="p-6 pt-0">
+              <div className="p-6 pt-0 space-y-4">
                 <div className="space-y-2">
                   <div className="flex items-center space-x-2">
                     <input
@@ -260,11 +297,36 @@ export const Checkout = () => {
                       htmlFor="cod"
                       className="text-gray-700 dark:text-gray-300 cursor-pointer"
                     >
-                      Cash on Delivery
+                      Cash on {orderType === "delivery" ? "Delivery" : "Pickup"}
                     </label>
                   </div>
                   <p className="text-sm text-gray-500 dark:text-gray-400 pl-6">
-                    Pay when you receive your order
+                    Pay when you {orderType === "delivery" ? "receive" : "collect"} your order
+                  </p>
+                </div>
+
+                <div className="space-y-2">
+                  <div className="flex items-center space-x-2">
+                    <input
+                      type="radio"
+                      id="card"
+                      name="payment"
+                      value="CARD"
+                      checked={form.paymentMethod === "CARD"}
+                      onChange={(e) =>
+                        updateField("paymentMethod", e.target.value)
+                      }
+                      className="h-4 w-4 text-primary focus:ring-primary"
+                    />
+                    <label
+                      htmlFor="card"
+                      className="text-gray-700 dark:text-gray-300 cursor-pointer"
+                    >
+                      Debit/Credit Card
+                    </label>
+                  </div>
+                  <p className="text-sm text-gray-500 dark:text-gray-400 pl-6">
+                    Pay first for hassle free {orderType === "delivery" ? "delivery" : "pickup"}
                   </p>
                 </div>
               </div>
@@ -367,7 +429,7 @@ export const Checkout = () => {
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-500 dark:text-gray-400">
-                        Delivery
+                        {orderType === "delivery" ? "Delivery" : "Pickup"}
                       </span>
                       <span className="text-green-600 dark:text-green-400">
                         Free

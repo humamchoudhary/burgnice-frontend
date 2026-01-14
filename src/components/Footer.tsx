@@ -1,17 +1,18 @@
 import { MapPin, Clock, Phone, Mail, Facebook, Instagram, Twitter } from "lucide-react";
+import { Link } from "react-router-dom";
 
 export const Footer = () => {
   return (
     <footer className="bg-gradient-to-b from-secondary/30 to-secondary/50 border-t mt-20">
       <div className="container mx-auto px-4 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           {/* Location & Contact */}
           <div>
             <h3 className="text-xl font-bold mb-4 text-foreground">Location</h3>
             <div className="space-y-3 text-muted-foreground">
               <div className="flex items-start space-x-3">
                 <MapPin className="h-5 w-5 text-primary mt-0.5" />
-                <p>123 Deansgate<br />Manchester M3 2BQ<br />United Kingdom</p>
+                <p>115 Witton St<br />Northwich CW9 5DY<br />United Kingdom</p>
               </div>
               <div className="flex items-center space-x-3">
                 <Phone className="h-5 w-5 text-primary" />
@@ -25,6 +26,31 @@ export const Footer = () => {
                   hello@burgnice.co.uk
                 </a>
               </div>
+            </div>
+          </div>
+
+          {/* Quick Links */}
+          <div>
+            <h3 className="text-xl font-bold mb-4 text-foreground">Quick Links</h3>
+            <div className="space-y-2 text-muted-foreground">
+              <Link 
+                to="/" 
+                className="block hover:text-primary transition-colors hover:translate-x-1 transform duration-200"
+              >
+                Home
+              </Link>
+              <Link 
+                to="/Menu" 
+                className="block hover:text-primary transition-colors hover:translate-x-1 transform duration-200"
+              >
+                Menu
+              </Link>
+              <Link 
+                to="/About" 
+                className="block hover:text-primary transition-colors hover:translate-x-1 transform duration-200"
+              >
+                About
+              </Link>
             </div>
           </div>
 
@@ -96,17 +122,19 @@ export const Footer = () => {
             </div>
           </div>
         </div>
-    <div className="text-center my-8">
-  <h3 className="text-2xl font-bold mb-4 text-foreground">Find Us in Northwich</h3>
-  <p className="text-muted-foreground max-w-2xl mx-auto">
-    Located in the heart of Deansgate, easily accessible by tram, train, and bus. 
-    Free parking available at the NCP just 3 minutes away.
-  </p>
-</div>
+
+        <div className="text-center my-8">
+          <h3 className="text-2xl font-bold mb-4 text-foreground">Find Us in Northwich</h3>
+          <p className="text-muted-foreground max-w-2xl mx-auto">
+            Located in the heart of Deansgate, easily accessible by tram, train, and bus. 
+            Free parking available at the NCP just 3 minutes away.
+          </p>
+        </div>
+
         {/* Map Section */}
         <div className="mt-12 rounded-lg overflow-hidden shadow-lg">
           <iframe
-            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2374.5582748747853!2d-2.2465654!3d53.4807593!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x487bb1bc99999999%3A0x1234567890abcdef!2sDeansgate%2C%20Manchester!5e0!3m2!1sen!2suk!4v1234567890"
+            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d1012247.9685516147!2d0.29113480801568026!3d51.174177360100394!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x487af90d95dba517%3A0xf8844737b4b9a5b5!2sBurg%20&#39;N&#39;%20Ice!5e1!3m2!1sen!2s!4v1768409761940!5m2!1sen!2s" 
             width="100%"
             height="300"
             style={{ border: 0 }}
