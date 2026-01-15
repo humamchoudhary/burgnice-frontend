@@ -1,60 +1,36 @@
-import { Heart } from "lucide-react";
-import { useState } from "react";
+import { menuItemAPI, MenuItem } from "@/services/api";
+import { useState, useEffect } from "react";
+// Remove the hardcoded deals array and interface
 
-interface Deal {
-  id: number;
-  title: string;
-  description: string;
-  price: number;
-  image: string;
-  badge?: string;
-}
-
-const deals: Deal[] = [
-  {
-    id: 1,
-    title: "The smash",
-    description: "Good Burger",
-    price: 15,
-    image:
-      "https://images.unsplash.com/photo-1626082927389-6cd097cdc6ec?w=400&h=300&fit=crop",
-  },
-  {
-    id: 2,
-    title: "Value Bucket",
-    description:
-      "Enjoy 9 pcs of our Signature Crispy Fried Chicken, hand-breaded in-house",
-    price: 80,
-    image:
-      "https://images.unsplash.com/photo-1626645738196-c2a7c87a8f58?w=400&h=300&fit=crop",
-  },
-  {
-    id: 3,
-    title: "Loaded Fries",
-    description: "Big Fries",
-    price: 20,
-    image:
-      "https://images.unsplash.com/photo-1606755962773-d324e0a13086?w=400&h=300&fit=crop",
-  },
-  {
-    id: 4,
-    title: "Duo Box",
-    description:
-      "The irresistible combo of 2 Signature smash burger + 2 loaded fries + drink",
-    price: 30,
-    image:
-      "https://images.unsplash.com/photo-1594212699903-ec8a3eca50f5?w=400&h=300&fit=crop",
-  },
-];
+const UPLOAD_BASE_URL =
+  import.meta.env.VITE_SERVER_BASE_URL || "http://localhost:5000";
 
 interface TopDealsGridProps {
-  onAddToCart?: (deal: Deal) => void;
+  onAddToCart?: (deal: MenuItem) => void;
 }
 
 export default function TopDealsGrid({ onAddToCart }: TopDealsGridProps) {
-  const [favorites, setFavorites] = useState<Set<number>>(new Set());
+  const [deals, setDeals] = useState<MenuItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [favorites, setFavorites] = useState<Set<string>>(new Set());
 
-  const toggleFavorite = (id: number) => {
+  useEffect(() => {
+    fetchTopDeals();
+  }, []);
+
+  const fetchTopDeals = async () => {
+    try {
+      setLoading(true);
+      const topDeals = await menuItemAPI.getTopDeals(4); // Get top 4 deals
+      setDeals(topDeals);
+    } catch (error) {
+      console.error("Error fetching top deals:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const toggleFavorite = (id: string) => {
     setFavorites((prev) => {
       const newFavorites = new Set(prev);
       if (newFavorites.has(id)) {
@@ -66,11 +42,15 @@ export default function TopDealsGrid({ onAddToCart }: TopDealsGridProps) {
     });
   };
 
-  const handleAddToCart = (deal: Deal) => {
+  const handleAddToCart = (deal: MenuItem) => {
     if (onAddToCart) {
       onAddToCart(deal);
     }
   };
+
+  if (loading) {
+    return <div className="py-12 text-center">Loading top deals...</div>;
+  }
 
   return (
     <section className="py-12 bg-gray-50">
@@ -88,18 +68,15 @@ export default function TopDealsGrid({ onAddToCart }: TopDealsGridProps) {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {deals.map((deal) => (
             <div
-              key={deal.id}
+              key={deal._id}
               className="bg-white rounded-lg overflow-hidden shadow-md hover:shadow-xl transition-shadow"
             >
-              {/* Card Header with Badge and Favorite */}
-              <div className="relative p-4 pb-0"></div>
-
               {/* Image */}
               <div className="px-4 py-2">
                 <div className="aspect-square relative overflow-hidden rounded-lg bg-gray-100">
                   <img
-                    src={deal.image}
-                    alt={deal.title}
+                    src={`${UPLOAD_BASE_URL}${deal.image}`}
+                    alt={deal.name}
                     className="w-full h-full object-cover hover:scale-110 transition-transform duration-500"
                   />
                 </div>
@@ -108,7 +85,7 @@ export default function TopDealsGrid({ onAddToCart }: TopDealsGridProps) {
               {/* Content */}
               <div className="p-4">
                 <h3 className="text-lg font-bold text-gray-900 mb-2">
-                  {deal.title}
+                  {deal.name}
                 </h3>
                 <p className="text-sm text-gray-600 mb-4 line-clamp-3 min-h-[60px]">
                   {deal.description}
@@ -117,7 +94,7 @@ export default function TopDealsGrid({ onAddToCart }: TopDealsGridProps) {
                 {/* Price */}
                 <div className="mb-4">
                   <span className="text-xl font-bold text-gray-900">
-                    $ {deal.price}
+                    $ {deal.price.toFixed(2)}
                   </span>
                 </div>
 

@@ -97,7 +97,6 @@ const OrdersPage: React.FC = () => {
   const [filteredOrders, setFilteredOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
-  const [statusFilter, setStatusFilter] = useState<string>("all");
   const [activeTab, setActiveTab] = useState("all");
   const [dropdownOpen, setDropdownOpen] = useState(false);
 
@@ -108,12 +107,14 @@ const OrdersPage: React.FC = () => {
     }
   }, [user, navigate]);
 
-  // Fetch orders from API
+  // Fetch orders from API - OPTIMIZED
   useEffect(() => {
     const fetchOrders = async () => {
       setLoading(true);
       try {
         console.log("🔄 Fetching orders for user:", user?.id);
+
+        // Use the optimized endpoint that fetches orders directly
         const response = await orderAPI.getOrderHistory();
 
         console.log("📦 API Response received:", response);
@@ -155,7 +156,7 @@ const OrdersPage: React.FC = () => {
       setOrders([]);
       setFilteredOrders([]);
     }
-  }, [user, statusFilter]);
+  }, [user]); // Removed statusFilter from dependencies since it's not used in fetching
 
   // Filter orders based on search and status
   useEffect(() => {
@@ -385,7 +386,10 @@ const OrdersPage: React.FC = () => {
                 </div>
 
                 <div className="flex gap-2 pt-2">
-                  <button className="flex-1 flex items-center justify-center px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors text-sm">
+                  <button
+                    onClick={() => navigate(`/orders/${order.id}`)}
+                    className="flex-1 flex items-center justify-center px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors text-sm"
+                  >
                     <Eye className="h-4 w-4 mr-2" />
                     View Details
                   </button>
@@ -478,6 +482,14 @@ const OrdersPage: React.FC = () => {
     },
   ];
 
+  // Calculate order stats for display
+  const orderStats = {
+    total: orders.length,
+    preparing: orders.filter((o) => o.status === "preparing").length,
+    ready: orders.filter((o) => o.status === "ready").length,
+    onTheWay: orders.filter((o) => o.status === "on-the-way").length,
+  };
+
   return (
     <div className="container mx-auto px-4 py-8 max-w-6xl">
       {/* Header */}
@@ -513,7 +525,7 @@ const OrdersPage: React.FC = () => {
                     Total Orders
                   </p>
                   <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                    {orders.length}
+                    {orderStats.total}
                   </p>
                 </div>
               </div>
@@ -530,7 +542,7 @@ const OrdersPage: React.FC = () => {
                     Preparing
                   </p>
                   <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                    {orders.filter((o) => o.status === "preparing").length}
+                    {orderStats.preparing}
                   </p>
                 </div>
               </div>
@@ -547,7 +559,7 @@ const OrdersPage: React.FC = () => {
                     Ready
                   </p>
                   <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                    {orders.filter((o) => o.status === "ready").length}
+                    {orderStats.ready}
                   </p>
                 </div>
               </div>
@@ -564,7 +576,7 @@ const OrdersPage: React.FC = () => {
                     On The Way
                   </p>
                   <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                    {orders.filter((o) => o.status === "on-the-way").length}
+                    {orderStats.onTheWay}
                   </p>
                 </div>
               </div>
@@ -601,7 +613,7 @@ const OrdersPage: React.FC = () => {
                   <button
                     key={option.value}
                     onClick={() => {
-                      setStatusFilter(option.value);
+                      setActiveTab(option.value);
                       setDropdownOpen(false);
                     }}
                     className="w-full flex items-center px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"

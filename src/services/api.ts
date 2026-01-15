@@ -16,6 +16,7 @@ const api = axios.create({
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem("token");
+    console.log("token:", token);
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -60,8 +61,9 @@ export interface MenuItem {
   description: string;
   price: number;
   image?: string;
-  category: Category | string;
+  categories: (Category | string)[];
   isAvailable?: boolean;
+  isTopDeal?: boolean; // Add this line
   createdAt?: string;
   updatedAt?: string;
 }
@@ -283,6 +285,13 @@ export const menuItemAPI = {
   // Basic CRUD
   getAll: async (params?: MenuItemQueryParams): Promise<MenuItem[]> => {
     const response = await api.get("/menu-items", { params });
+    return response.data;
+  },
+
+  getTopDeals: async (limit?: number): Promise<MenuItem[]> => {
+    const response = await api.get("/menu-items", {
+      params: { isTopDeal: true, limit },
+    });
     return response.data;
   },
 
@@ -643,6 +652,34 @@ export const loyaltyAPI = {
   getHistory: async (): Promise<LoyaltySummary["pointsHistory"]> => {
     const response = await api.get("/orders/loyalty-summary");
     return response.data.pointsHistory || [];
+  },
+};
+
+export const checkoutAPI = {
+  // Create Stripe checkout session
+  createSession: async (checkoutData: {
+    prods: Array<{ id: string; quantity: number }>;
+    customerName: string;
+    contactPhone: string;
+    deliveryAddress: string;
+    paymentMethod: string;
+    notes?: string;
+    orderType: "delivery" | "pickup";
+    discountAmount: number;
+    loyaltyPointsUsed: number;
+    loyaltyPointsEarned: number;
+  }): Promise<{ url: string; message: string }> => {
+    const response = await api.post("/checkout/create-session", checkoutData);
+    return response.data;
+  },
+
+  // Check payment status
+  checkStatus: async (orderId: string): Promise<boolean> => {
+    const response = await api.get("/checkout/status", {
+      params: { orderid: orderId },
+    });
+    console.log(response.data);
+    return response.data;
   },
 };
 

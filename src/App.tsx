@@ -14,6 +14,8 @@ import ProfilePage from "@/pages/Profile";
 import SettingsPage from "@/pages/Settings";
 import OrdersPage from "@/pages/Orders";
 import AuthPage from "./pages/Auth";
+import { PaymentSuccess } from "@/pages/PaymentSuccess";
+import { PaymentCancel } from "@/pages/PaymentCancel";
 
 const queryClient = new QueryClient();
 
@@ -29,6 +31,9 @@ const App = () => (
             <Route path="/menu" element={<MenuWrapper />} />
             <Route path="/about" element={<About />} />
             <Route path="/checkout" element={<Checkout />} />
+
+            <Route path="/success" element={<PaymentSuccess />} />
+            <Route path="/cancel" element={<PaymentCancel />} />
 
             {/* Protected Routes - Only accessible when logged in */}
             <Route

@@ -4,9 +4,9 @@ import { TestimonialCarousel } from "@/components/TestimonialCarousel";
 import { ServiceIcons } from "@/components/ServiceIcons";
 import HorizontalMenuGrid from "@/components/HorizontalMenuGrid";
 import { Link } from "react-router-dom";
-import { categoryAPI } from "@/services/api";
+import { categoryAPI, MenuItem } from "@/services/api";
 import TopDealsGrid from "@/components/TopDealGrid";
-
+import { useOutletContext } from "react-router-dom";
 // Import images
 import heroImage from "@/assets/hero.png";
 import burgerImage from "@/assets/category-burgers.jpeg";
@@ -23,11 +23,12 @@ const fallbackImages = [
   smashBurgerImage,
 ];
 
-interface HomeProps {
-  onAddToCart?: (item: any) => void;
-}
+type OutletContext = {
+  onAddToCart: (item: MenuItem) => void;
+};
 
-export const Home = ({ onAddToCart }: HomeProps) => {
+export const Home = () => {
+  const { onAddToCart } = useOutletContext<OutletContext>();
   const [categories, setCategories] = useState<
     Array<{ title: string; image: string; link: string }>
   >([]);

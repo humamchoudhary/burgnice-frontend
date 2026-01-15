@@ -11,6 +11,7 @@ export const Layout = () => {
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
 
   const handleAddToCart = (item: MenuItemType) => {
+    console.log(item);
     setCartItems((prev) => {
       const existingItem = prev.find((i) => i.id === item.id);
       // if (existingItem) {

@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/authContext";
 import { Loader2, Tag, Award } from "lucide-react";
 import { toast } from "sonner";
-import { orderAPI } from "@/services/api";
+import { orderAPI, checkoutAPI } from "@/services/api";
 
 const UPLOAD_BASE_URL =
   import.meta.env.VITE_SERVER_BASE_URL || "http://localhost:5000";
@@ -33,11 +33,12 @@ export const Checkout = () => {
   });
   const [loading, setLoading] = useState(false);
 
-  // Load cart items and checkout data from sessionStorage
   useEffect(() => {
     const stored = sessionStorage.getItem("cart");
     const checkoutData = sessionStorage.getItem("checkoutData");
-    const savedOrderType = sessionStorage.getItem("orderType") as "delivery" | "pickup";
+    const savedOrderType = sessionStorage.getItem("orderType") as
+      | "delivery"
+      | "pickup";
 
     if (savedOrderType) {
       setOrderType(savedOrderType);
@@ -71,15 +72,20 @@ export const Checkout = () => {
       }));
     }
 
-    // Listen for order type changes
     const handleOrderTypeChange = (e: CustomEvent) => {
       setOrderType(e.detail);
     };
 
-    window.addEventListener("order-type-changed", handleOrderTypeChange as EventListener);
+    window.addEventListener(
+      "order-type-changed",
+      handleOrderTypeChange as EventListener,
+    );
 
     return () => {
-      window.removeEventListener("order-type-changed", handleOrderTypeChange as EventListener);
+      window.removeEventListener(
+        "order-type-changed",
+        handleOrderTypeChange as EventListener,
+      );
     };
   }, [user]);
 
@@ -95,13 +101,12 @@ export const Checkout = () => {
   };
 
   const placeOrder = async () => {
-    // Validate required fields based on order type
+    // Validation
     if (!form.customerName || !form.contactPhone) {
       toast.error("Please fill all required fields.");
       return;
     }
 
-    // Only require delivery address if order type is delivery
     if (orderType === "delivery" && !form.deliveryAddress) {
       toast.error("Please enter your delivery address.");
       return;
@@ -112,30 +117,61 @@ export const Checkout = () => {
       return;
     }
 
-    const orderItems = items.map((item) => ({
-      menuItem: item.id,
-      quantity: item.quantity,
-      price: item.price,
-    }));
-
-    const payload = {
-      orderItems: orderItems,
-      subtotal: subtotal,
-      discountAmount: discountAmount,
-      loyaltyPointsUsed: pointsUsed,
-      total: total,
-      deliveryAddress: orderType === "delivery" ? form.deliveryAddress : "Pickup Order",
-      paymentMethod: form.paymentMethod,
-      notes: form.notes,
-      contactPhone: form.contactPhone,
-      customerName: form.customerName,
-      status: "pending" as const,
-      loyaltyPointsEarned: pointsEarned,
-      orderType: orderType, // Add order type to payload
-    };
-
     setLoading(true);
+
     try {
+      // CARD PAYMENT - Redirect to Stripe
+      if (form.paymentMethod === "CARD") {
+        const prods = items.map((item) => ({
+          id: item.id,
+          quantity: item.quantity,
+        }));
+
+        const payload = {
+          prods,
+          customerName: form.customerName,
+          contactPhone: form.contactPhone,
+          deliveryAddress:
+            orderType === "delivery" ? form.deliveryAddress : "Pickup Order",
+          paymentMethod: form.paymentMethod,
+          notes: form.notes,
+          orderType: orderType,
+          discountAmount: discountAmount,
+          loyaltyPointsUsed: pointsUsed,
+          loyaltyPointsEarned: pointsEarned,
+        };
+
+        const response = await checkoutAPI.createSession(payload);
+
+        // Redirect to Stripe
+        window.location.href = response.url;
+        return;
+      }
+
+      // COD PAYMENT - Create order directly
+      const orderItems = items.map((item) => ({
+        menuItem: item.id,
+        quantity: item.quantity,
+        price: item.price,
+      }));
+
+      const payload = {
+        orderItems: orderItems,
+        subtotal: subtotal,
+        discountAmount: discountAmount,
+        loyaltyPointsUsed: pointsUsed,
+        total: total,
+        deliveryAddress:
+          orderType === "delivery" ? form.deliveryAddress : "Pickup Order",
+        paymentMethod: form.paymentMethod,
+        notes: form.notes,
+        contactPhone: form.contactPhone,
+        customerName: form.customerName,
+        status: "pending" as const,
+        loyaltyPointsEarned: pointsEarned,
+        orderType: orderType,
+      };
+
       const response = await orderAPI.create(payload);
 
       toast.success("Order placed successfully!");
@@ -162,7 +198,11 @@ export const Checkout = () => {
       }, 1500);
     } catch (error: any) {
       console.error("Order creation failed:", error);
-      toast.error(error.response?.data?.message || "Failed to place order.");
+      toast.error(
+        error.response?.data?.message ||
+          error.message ||
+          "Failed to place order.",
+      );
     } finally {
       setLoading(false);
     }
@@ -181,7 +221,9 @@ export const Checkout = () => {
             <div className="bg-white dark:bg-gray-900 rounded-xl shadow-md border border-gray-200 dark:border-gray-800">
               <div className="p-6 pb-3">
                 <h2 className="text-xl font-bold text-gray-900 dark:text-white">
-                  {orderType === "delivery" ? "Delivery Information" : "Pickup Information"}
+                  {orderType === "delivery"
+                    ? "Delivery Information"
+                    : "Pickup Information"}
                 </h2>
               </div>
               <div className="p-6 pt-0 space-y-4">
@@ -223,7 +265,6 @@ export const Checkout = () => {
                   />
                 </div>
 
-                {/* Conditionally render delivery address only for delivery orders */}
                 {orderType === "delivery" && (
                   <div className="space-y-2">
                     <label
@@ -245,11 +286,11 @@ export const Checkout = () => {
                   </div>
                 )}
 
-                {/* Show pickup info message for pickup orders */}
                 {orderType === "pickup" && (
                   <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
                     <p className="text-sm text-blue-800 dark:text-blue-300">
-                      📍 You'll receive a call when your order is ready for pickup at our location.
+                      📍 You'll receive a call when your order is ready for
+                      pickup at our location.
                     </p>
                   </div>
                 )}
@@ -301,7 +342,9 @@ export const Checkout = () => {
                     </label>
                   </div>
                   <p className="text-sm text-gray-500 dark:text-gray-400 pl-6">
-                    Pay when you {orderType === "delivery" ? "receive" : "collect"} your order
+                    Pay when you{" "}
+                    {orderType === "delivery" ? "receive" : "collect"} your
+                    order
                   </p>
                 </div>
 
@@ -326,7 +369,7 @@ export const Checkout = () => {
                     </label>
                   </div>
                   <p className="text-sm text-gray-500 dark:text-gray-400 pl-6">
-                    Pay first for hassle free {orderType === "delivery" ? "delivery" : "pickup"}
+                    Pay securely with Stripe
                   </p>
                 </div>
               </div>
@@ -343,7 +386,6 @@ export const Checkout = () => {
               </div>
               <div className="p-6 pt-0">
                 <div className="space-y-4">
-                  {/* Order Items */}
                   <div className="space-y-3 max-h-64 overflow-y-auto pr-2">
                     {items.map((item) => (
                       <div
@@ -374,7 +416,6 @@ export const Checkout = () => {
 
                   <div className="h-px bg-gray-200 dark:bg-gray-800" />
 
-                  {/* Loyalty Points Discount */}
                   {isAuthenticated &&
                     useLoyaltyPoints &&
                     discountAmount > 0 && (
@@ -397,7 +438,6 @@ export const Checkout = () => {
                       </div>
                     )}
 
-                  {/* Loyalty Points Earned */}
                   {isAuthenticated && (
                     <div className="p-3 bg-primary/5 dark:bg-primary/10 rounded-lg border border-primary/20 dark:border-primary/30">
                       <div className="flex items-center justify-between mb-2">
@@ -417,7 +457,6 @@ export const Checkout = () => {
                     </div>
                   )}
 
-                  {/* Order Total */}
                   <div className="space-y-2">
                     <div className="flex justify-between">
                       <span className="text-gray-500 dark:text-gray-400">
@@ -427,15 +466,6 @@ export const Checkout = () => {
                         £{subtotal.toFixed(2)}
                       </span>
                     </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-500 dark:text-gray-400">
-                        {orderType === "delivery" ? "Delivery" : "Pickup"}
-                      </span>
-                      <span className="text-green-600 dark:text-green-400">
-                        Free
-                      </span>
-                    </div>
-
                     {discountAmount > 0 && (
                       <div className="flex justify-between">
                         <span className="text-gray-500 dark:text-gray-400">
@@ -446,9 +476,7 @@ export const Checkout = () => {
                         </span>
                       </div>
                     )}
-
                     <div className="h-px bg-gray-200 dark:bg-gray-800 my-2" />
-
                     <div className="flex justify-between text-lg font-bold">
                       <span className="text-gray-900 dark:text-white">
                         Total
@@ -457,22 +485,6 @@ export const Checkout = () => {
                     </div>
                   </div>
 
-                  {/* Loyalty Points Note */}
-                  {isAuthenticated &&
-                    !useLoyaltyPoints &&
-                    user?.loyaltyPoints &&
-                    user.loyaltyPoints >= 10 &&
-                    total >= 10 && (
-                      <div className="p-3 bg-gray-100 dark:bg-gray-800/50 rounded-lg border border-gray-200 dark:border-gray-700">
-                        <p className="text-xs text-center text-gray-600 dark:text-gray-400">
-                          💡 You have {user.loyaltyPoints} loyalty points
-                          available. Go back to cart to apply{" "}
-                          {Math.floor(user.loyaltyPoints / 10) * 10}% discount!
-                        </p>
-                      </div>
-                    )}
-
-                  {/* Place Order Button */}
                   <button
                     onClick={placeOrder}
                     disabled={loading}
@@ -488,7 +500,6 @@ export const Checkout = () => {
                     )}
                   </button>
 
-                  {/* Security Notice */}
                   <p className="text-xs text-center text-gray-500 dark:text-gray-400 mt-4">
                     🔒 Your payment information is secure
                   </p>

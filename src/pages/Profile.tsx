@@ -12,30 +12,88 @@ import {
 import { useNavigate } from "react-router-dom";
 import api from "@/services/api";
 
+interface ProfileData {
+  username: string;
+  email: string;
+  loyaltyPoints: number;
+  totalSpent: number;
+  joinDate: string;
+  totalOrders: number;
+  tier: string;
+}
+
 const ProfilePage: React.FC = () => {
   const { user, loading } = useAuth();
   const navigate = useNavigate();
-  const [profileData, setProfileData] = useState<any>(null);
+  const [profileData, setProfileData] = useState<ProfileData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const fetchProfileData = async () => {
       if (user && !loading) {
         try {
-          const response = await api.get("/user/profile");
-          setProfileData(response.data);
+          // Fetch user profile and order history in parallel
+          const [profileResponse, orderHistoryResponse] = await Promise.all([
+            api.get("/auth/profile"),
+            api.get("/orders/history"),
+          ]);
+
+          const profile = profileResponse.data;
+          const orderHistory = orderHistoryResponse.data;
+
+          // Calculate tier based on loyalty points
+          const loyaltyPoints =
+            profile.loyaltyPoints || user.loyaltyPoints || 0;
+          const tier =
+            loyaltyPoints >= 1000
+              ? "Gold"
+              : loyaltyPoints >= 500
+                ? "Silver"
+                : "Bronze";
+          console.log("Profile");
+          console.log(profile);
+          console.log({
+            username: profile.username || user.username,
+            email: profile.email || user.email,
+            loyaltyPoints,
+            totalSpent: orderHistory.totalSpent || profile.totalSpent || 0,
+            joinDate: new Date(
+              profile.createdAt || user.createdAt || Date.now(),
+            ).toLocaleDateString(),
+            totalOrders:
+              orderHistory.totalOrders || orderHistory.orders?.length || 0,
+            tier,
+          });
+
+          setProfileData({
+            username: profile.username || user.username,
+            email: profile.email || user.email,
+            loyaltyPoints,
+            totalSpent: orderHistory.totalSpent || profile.totalSpent || 0,
+            joinDate: new Date(
+              profile.createdAt || user.createdAt || Date.now(),
+            ).toLocaleDateString(),
+            totalOrders:
+              orderHistory.totalOrders || orderHistory.orders?.length || 0,
+            tier,
+          });
         } catch (error) {
           console.error("Error fetching profile:", error);
+          // Fallback to user data with minimal order info
+          const loyaltyPoints = user.loyaltyPoints || 0;
           setProfileData({
-            ...user,
+            username: user.username,
+            email: user.email,
+            loyaltyPoints,
+            totalSpent: 0,
             joinDate: new Date(
               user.createdAt || Date.now(),
             ).toLocaleDateString(),
             totalOrders: 0,
             tier:
-              user.loyaltyPoints > 1000
+              loyaltyPoints >= 1000
                 ? "Gold"
-                : user.loyaltyPoints > 500
+                : loyaltyPoints >= 500
                   ? "Silver"
                   : "Bronze",
           });
@@ -74,9 +132,37 @@ const ProfilePage: React.FC = () => {
     );
   }
 
-  if (!user) {
+  if (!user || !profileData) {
     return null;
   }
+
+  const getNextTierInfo = () => {
+    if (profileData.tier === "Bronze") {
+      return {
+        next: "Silver",
+        required: 500,
+        current: profileData.loyaltyPoints,
+      };
+    } else if (profileData.tier === "Silver") {
+      return {
+        next: "Gold",
+        required: 1000,
+        current: profileData.loyaltyPoints,
+      };
+    } else {
+      return {
+        next: "Gold",
+        required: 1000,
+        current: profileData.loyaltyPoints,
+      };
+    }
+  };
+
+  const nextTierInfo = getNextTierInfo();
+  const progressPercentage =
+    profileData.tier === "Gold"
+      ? 100
+      : Math.min((nextTierInfo.current / nextTierInfo.required) * 100, 100);
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-4xl">
@@ -117,15 +203,15 @@ const ProfilePage: React.FC = () => {
                 <div className="flex items-start gap-4">
                   <div className="h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center">
                     <span className="text-lg font-semibold text-primary">
-                      {user.username?.charAt(0).toUpperCase() || "U"}
+                      {profileData.username?.charAt(0).toUpperCase() || "U"}
                     </span>
                   </div>
                   <div>
                     <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                      {user.username || "User"}
+                      {profileData.username || "User"}
                     </h3>
                     <p className="text-sm text-gray-600 dark:text-gray-400">
-                      Member since {profileData?.joinDate}
+                      Member since {profileData.joinDate}
                     </p>
                   </div>
                 </div>
@@ -137,7 +223,7 @@ const ProfilePage: React.FC = () => {
                       <span>Email Address</span>
                     </div>
                     <p className="font-medium text-gray-900 dark:text-white">
-                      {user.email || "No email provided"}
+                      {profileData.email || "No email provided"}
                     </p>
                   </div>
 
@@ -147,7 +233,7 @@ const ProfilePage: React.FC = () => {
                       <span>Account Tier</span>
                     </div>
                     <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 capitalize">
-                      {profileData?.tier}
+                      {profileData.tier}
                     </span>
                   </div>
                 </div>
@@ -171,14 +257,14 @@ const ProfilePage: React.FC = () => {
                   <div className="flex items-center gap-2">
                     <Award className="h-5 w-5 text-primary" />
                     <span className="text-2xl font-bold text-primary">
-                      {user.loyaltyPoints || 0}
+                      {profileData.loyaltyPoints}
                     </span>
                     <span className="text-gray-600 dark:text-gray-400">
                       points
                     </span>
                   </div>
                   <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary/10 text-primary border border-primary/20">
-                    {profileData?.tier} Member
+                    {profileData.tier} Member
                   </span>
                 </div>
 
@@ -188,26 +274,22 @@ const ProfilePage: React.FC = () => {
                       Progress to next tier
                     </span>
                     <span className="font-medium text-gray-900 dark:text-white">
-                      {user.loyaltyPoints || 0} /{" "}
-                      {profileData?.tier === "Bronze"
-                        ? 500
-                        : profileData?.tier === "Silver"
-                          ? 1000
-                          : "∞"}
+                      {profileData.loyaltyPoints} /{" "}
+                      {profileData.tier === "Gold"
+                        ? "∞"
+                        : nextTierInfo.required}
                     </span>
                   </div>
                   <div className="h-2 bg-gray-200 dark:bg-gray-800 rounded-full overflow-hidden">
                     <div
-                      className="h-full bg-gradient-to-r from-primary to-primary/70 rounded-full"
-                      style={{
-                        width: `${Math.min((user.loyaltyPoints || 0) % (profileData?.tier === "Bronze" ? 500 : 1000), 100)}%`,
-                      }}
+                      className="h-full bg-gradient-to-r from-primary to-primary/70 rounded-full transition-all duration-500"
+                      style={{ width: `${progressPercentage}%` }}
                     />
                   </div>
                   <p className="text-xs text-gray-600 dark:text-gray-400">
-                    {profileData?.tier === "Gold"
+                    {profileData.tier === "Gold"
                       ? "You've reached the highest tier!"
-                      : `Need ${(profileData?.tier === "Bronze" ? 500 : 1000) - (user.loyaltyPoints || 0)} more points for ${profileData?.tier === "Bronze" ? "Silver" : "Gold"} tier`}
+                      : `Need ${nextTierInfo.required - nextTierInfo.current} more points for ${nextTierInfo.next} tier`}
                   </p>
                 </div>
               </div>
@@ -230,7 +312,15 @@ const ProfilePage: React.FC = () => {
                   Total Orders
                 </span>
                 <span className="font-bold text-gray-900 dark:text-white">
-                  {profileData?.totalOrders || 0}
+                  {profileData.totalOrders}
+                </span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-gray-600 dark:text-gray-400">
+                  Total Spent
+                </span>
+                <span className="font-bold text-gray-900 dark:text-white">
+                  ${profileData.totalSpent.toFixed(2)}
                 </span>
               </div>
               <div className="flex items-center justify-between">
@@ -238,15 +328,15 @@ const ProfilePage: React.FC = () => {
                   Points Earned
                 </span>
                 <span className="font-bold text-primary">
-                  {user.loyaltyPoints || 0}
+                  {profileData.loyaltyPoints}
                 </span>
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-sm text-gray-600 dark:text-gray-400">
                   Member Since
                 </span>
-                <span className="font-medium text-gray-900 dark:text-white">
-                  {profileData?.joinDate}
+                <span className="font-medium text-gray-900 dark:text-white text-sm">
+                  {profileData.joinDate}
                 </span>
               </div>
             </div>
