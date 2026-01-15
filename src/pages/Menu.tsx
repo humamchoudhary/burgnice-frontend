@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
-import { MenuItem, MenuItemType } from "@/components/MenuItem";
-import { categoryAPI, menuItemAPI } from "@/services/api";
+import { MenuItem as MenuItemComponent } from "@/components/MenuItem";
+import { categoryAPI, menuItemAPI, MenuItem } from "@/services/api";
 import {
   Loader2,
   Search,
@@ -13,19 +13,19 @@ import {
 import { ItemDetailsModal } from "@/components/ItemDetailsModal";
 
 interface MenuProps {
-  onAddToCart: (item: MenuItemType) => void;
+  onAddToCart: (item: MenuItem) => void;
 }
 
 export const Menu = ({ onAddToCart }: MenuProps) => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [activeTab, setActiveTab] = useState<string>("all");
-  const [menuItems, setMenuItems] = useState<MenuItemType[]>([]);
+  const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
   const [categories, setCategories] = useState<
     { _id: string; name: string; slug: string }[]
   >([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [selectedItem, setSelectedItem] = useState<MenuItemType | null>(null);
+  const [selectedItem, setSelectedItem] = useState<MenuItem | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [priceFilter, setPriceFilter] = useState<
     "all" | "under10" | "under20" | "over20"
@@ -73,7 +73,7 @@ export const Menu = ({ onAddToCart }: MenuProps) => {
           }
 
           return {
-            id: item._id,
+            id: item.id,
             name: item.name,
             description: item.description,
             price: item.price,
@@ -113,13 +113,13 @@ export const Menu = ({ onAddToCart }: MenuProps) => {
     setSearchParams(searchParams);
   };
 
-  const handleItemClick = (item: MenuItemType) => {
+  const handleItemClick = (item: MenuItem) => {
     setSelectedItem(item);
   };
 
-  const handleAddToCart = (item: MenuItemType) => {
+  const handleAddToCart = (item: MenuItem) => {
     const existingCart = sessionStorage.getItem("cart");
-    const cartItems: (MenuItemType & { quantity: number })[] = existingCart
+    const cartItems: (MenuItem & { quantity: number })[] = existingCart
       ? JSON.parse(existingCart)
       : [];
     const existing = cartItems.find((i) => i.id === item.id);
@@ -394,7 +394,7 @@ export const Menu = ({ onAddToCart }: MenuProps) => {
                       style={{ animationDelay: `${index * 50}ms` }}
                       onClick={() => handleItemClick(item)}
                     >
-                      <MenuItem
+                      <MenuItemComponent
                         item={item}
                         onAddToCart={() => handleAddToCart(item)}
                       />
@@ -450,7 +450,7 @@ export const Menu = ({ onAddToCart }: MenuProps) => {
                   >
                     <div className="absolute -inset-1 bg-gradient-to-r from-primary to-primary/30 rounded-2xl blur opacity-20 group-hover:opacity-30 transition-opacity"></div>
                     <div className="relative">
-                      <MenuItem
+                      <MenuItemComponent
                         item={item}
                         onAddToCart={() => handleAddToCart(item)}
                       />

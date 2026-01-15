@@ -1,10 +1,10 @@
 import { useRef, useState, useEffect } from "react";
 import { ChevronLeft, ChevronRight, Plus } from "lucide-react";
-import { MenuItemType } from "@/components/MenuItem";
+import { MenuItem } from "@/services/api";
 
 interface FeaturedItemsProps {
-  items: MenuItemType[];
-  onAddToCart: (item: MenuItemType) => void;
+  items: MenuItem[];
+  onAddToCart: (item: MenuItem) => void;
 }
 
 const UPLOAD_BASE_URL =

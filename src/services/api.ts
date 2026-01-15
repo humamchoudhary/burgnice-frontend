@@ -56,7 +56,7 @@ export interface Category {
 }
 
 export interface MenuItem {
-  _id: string;
+  id: string;
   name: string;
   description: string;
   price: number;
@@ -694,7 +694,9 @@ export const cartAPI = {
   // Get cart from backend (for logged-in users)
   getCart: async (): Promise<any[]> => {
     try {
+      console.log("GET CART");
       const response = await api.get("/cart");
+      console.log(response);
       return response.data.cart || [];
     } catch (error) {
       console.warn("Failed to get cart from backend:", error);

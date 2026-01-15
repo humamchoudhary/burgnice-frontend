@@ -1,9 +1,9 @@
 import { useOutletContext } from "react-router-dom";
 import { Menu } from "./Menu";
-import { MenuItemType } from "@/components/MenuItem";
+import { MenuItem } from "@/services/api";
 
 type LayoutContext = {
-  onAddToCart: (item: MenuItemType) => void;
+  onAddToCart: (item: MenuItem) => void;
 };
 
 export const MenuWrapper = () => {

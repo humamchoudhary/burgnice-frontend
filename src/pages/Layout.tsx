@@ -3,15 +3,14 @@ import { Outlet } from "react-router-dom";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { Cart, CartItem } from "@/components/Cart";
-import { MenuItemType } from "@/components/MenuItem";
+import { MenuItem } from "@/services/api";
 import { toast } from "sonner";
 
 export const Layout = () => {
   const [cartOpen, setCartOpen] = useState(false);
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
 
-  const handleAddToCart = (item: MenuItemType) => {
-    console.log(item);
+  const handleAddToCart = (item: MenuItem) => {
     setCartItems((prev) => {
       const existingItem = prev.find((i) => i.id === item.id);
       // if (existingItem) {

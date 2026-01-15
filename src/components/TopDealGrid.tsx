@@ -1,15 +1,17 @@
 import { menuItemAPI, MenuItem } from "@/services/api";
 import { useState, useEffect } from "react";
 // Remove the hardcoded deals array and interface
-
+//
 const UPLOAD_BASE_URL =
   import.meta.env.VITE_SERVER_BASE_URL || "http://localhost:5000";
 
-interface TopDealsGridProps {
-  onAddToCart?: (deal: MenuItem) => void;
-}
+import { useOutletContext } from "react-router-dom";
+type LayoutContext = {
+  onAddToCart: (item: MenuItem) => void;
+};
 
-export default function TopDealsGrid({ onAddToCart }: TopDealsGridProps) {
+export default function TopDealsGrid() {
+  const { onAddToCart } = useOutletContext<LayoutContext>();
   const [deals, setDeals] = useState<MenuItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [favorites, setFavorites] = useState<Set<string>>(new Set());
@@ -42,9 +44,21 @@ export default function TopDealsGrid({ onAddToCart }: TopDealsGridProps) {
     });
   };
 
-  const handleAddToCart = (deal: MenuItem) => {
+  const handleAddToCart = (item: MenuItem) => {
+    const existingCart = sessionStorage.getItem("cart");
+    const cartItems: (MenuItem & { quantity: number })[] = existingCart
+      ? JSON.parse(existingCart)
+      : [];
+    const existing = cartItems.find((i) => i.id === item.id);
+    if (existing) {
+      existing.quantity += 1;
+    } else {
+      cartItems.push({ ...item, quantity: 1 });
+    }
+    sessionStorage.setItem("cart", JSON.stringify(cartItems));
+    window.dispatchEvent(new Event("cart-updated"));
     if (onAddToCart) {
-      onAddToCart(deal);
+      onAddToCart(item);
     }
   };
 
@@ -68,7 +82,7 @@ export default function TopDealsGrid({ onAddToCart }: TopDealsGridProps) {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {deals.map((deal) => (
             <div
-              key={deal._id}
+              key={deal.id}
               className="bg-white rounded-lg overflow-hidden shadow-md hover:shadow-xl transition-shadow"
             >
               {/* Image */}

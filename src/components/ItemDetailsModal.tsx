@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import { MenuItemType, convertMenuItem } from "@/components/MenuItem";
-import { menuItemAPI } from "@/services/api";
+import { convertMenuItem } from "@/components/MenuItem";
+import { menuItemAPI, MenuItem } from "@/services/api";
 import { Minus, Plus, X } from "lucide-react";
 import { toast } from "sonner";
 
@@ -8,9 +8,9 @@ const UPLOAD_BASE_URL =
   import.meta.env.VITE_SERVER_BASE_URL || "http://localhost:5000";
 
 interface ItemDetailsModalProps {
-  item: MenuItemType | null;
+  item: MenuItem | null;
   onClose: () => void;
-  onAddToCart: (item: MenuItemType) => void;
+  onAddToCart: (item: MenuItem) => void;
 }
 
 export const ItemDetailsModal = ({
@@ -18,7 +18,7 @@ export const ItemDetailsModal = ({
   onClose,
   onAddToCart,
 }: ItemDetailsModalProps) => {
-  const [suggestions, setSuggestions] = useState<MenuItemType[]>([]);
+  const [suggestions, setSuggestions] = useState<MenuItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [quantity, setQuantity] = useState(1);
   const [isOpen, setIsOpen] = useState(!!item);
@@ -77,7 +77,7 @@ export const ItemDetailsModal = ({
 
   const handleAddToCart = () => {
     const existingCart = sessionStorage.getItem("cart");
-    const cartItems: (MenuItemType & { quantity: number })[] = existingCart
+    const cartItems: (MenuItem & { quantity: number })[] = existingCart
       ? JSON.parse(existingCart)
       : [];
     const existing = cartItems.find((i) => i.id === item.id);
@@ -91,9 +91,9 @@ export const ItemDetailsModal = ({
     toast.success(`Added ${item.name} to cart`);
   };
 
-  const addToCartSession = (menuItem: MenuItemType, qty = 1) => {
+  const addToCartSession = (menuItem: MenuItem, qty = 1) => {
     const existingCart = sessionStorage.getItem("cart");
-    const cartItems: (MenuItemType & { quantity: number })[] = existingCart
+    const cartItems: (MenuItem & { quantity: number })[] = existingCart
       ? JSON.parse(existingCart)
       : [];
     const existing = cartItems.find((i) => i.id === menuItem.id);

@@ -1,9 +1,9 @@
 import { useOutletContext } from "react-router-dom";
 import { Home } from "./Home";
-import { MenuItemType } from "@/components/MenuItem";
+import { MenuItem } from "@/services/api";
 
 interface IndexContext {
-  onAddToCart: (item: MenuItemType) => void;
+  onAddToCart: (item: MenuItem) => void;
 }
 
 const Index = () => {

@@ -7,25 +7,14 @@ import {
   ChefHat,
   Clock,
 } from "lucide-react";
-import { MenuItem as APIMenuItem } from "@/services/api";
+import { MenuItem as APIMenuItem, Category } from "@/services/api";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
 
 const UPLOAD_BASE_URL =
   import.meta.env.VITE_SERVER_BASE_URL || "http://localhost:5000";
 
-export interface MenuItemType {
-  id: string;
-  name: string;
-  description: string;
-  price: number;
-  image?: string;
-  categories?: string[];
-  prepTime?: number;
-  calories?: number;
-}
-
-export const convertMenuItem = (apiItem: APIMenuItem): MenuItemType => {
+export const convertMenuItem = (apiItem: APIMenuItem): APIMenuItem => {
   let categoriesArray: string[] = [];
 
   if (Array.isArray(apiItem.categories)) {
@@ -48,7 +37,7 @@ export const convertMenuItem = (apiItem: APIMenuItem): MenuItemType => {
   }
 
   return {
-    id: apiItem._id,
+    id: apiItem.id,
     name: apiItem.name,
     description: apiItem.description,
     price: apiItem.price,
@@ -58,7 +47,7 @@ export const convertMenuItem = (apiItem: APIMenuItem): MenuItemType => {
 };
 
 interface MenuItemProps {
-  item: MenuItemType;
+  item: APIMenuItem;
   onAddToCart: () => void;
   variant?: "default" | "minimal" | "featured";
 }

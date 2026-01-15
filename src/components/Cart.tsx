@@ -1,12 +1,12 @@
 import { useEffect, useState } from "react";
 import { X, Minus, Plus, ShoppingBag, Award, Sparkles } from "lucide-react";
-import { MenuItemType } from "./MenuItem";
+import { MenuItem } from "@/services/api";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/authContext";
 const UPLOAD_BASE_URL =
   import.meta.env.VITE_SERVER_BASE_URL || "http://localhost:5000";
 
-export interface CartItem extends MenuItemType {
+export interface CartItem extends MenuItem {
   quantity: number;
 }
 
@@ -35,24 +35,21 @@ export const Cart = ({ isOpen, onClose }: CartProps) => {
 
   const loadCartItems = () => {
     const storedCart = sessionStorage.getItem("cart");
-    const cartItems: MenuItemType[] = storedCart ? JSON.parse(storedCart) : [];
+    const cartItems: CartItem[] = storedCart ? JSON.parse(storedCart) : [];
 
-    // Filter out null/undefined items
-    const validItems = cartItems.filter((item) => item && item.id);
-
-    // Aggregate quantities for identical items
     const aggregatedMap = new Map<string, CartItem>();
 
-    validItems.forEach((item) => {
-      if (!item.id) return;
+    cartItems.forEach((item) => {
+      if (!item?.name) return;
 
-      const existing = aggregatedMap.get(item.id);
+      const existing = aggregatedMap.get(item.name);
+
       if (existing) {
-        existing.quantity += 1;
+        existing.quantity += item.quantity ?? 1;
       } else {
-        aggregatedMap.set(item.id, {
+        aggregatedMap.set(item.name, {
           ...item,
-          quantity: 1,
+          quantity: item.quantity ?? 1,
         });
       }
     });

@@ -297,7 +297,7 @@ export const Home = () => {
       {/* Horizontal Grid */}
       <HorizontalMenuGrid />
       {/* Top Deals Grid */}
-      <TopDealsGrid onAddToCart={onAddToCart} />
+      <TopDealsGrid />
       {/* Testimonial Carousel */}
       <TestimonialCarousel />
       {/* Bottom Cards Section */}

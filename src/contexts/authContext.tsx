@@ -196,17 +196,19 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   // Helper to fetch cart from backend
   const fetchCartFromBackend = async () => {
     try {
-      const response = await fetch("/api/cart", {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-      });
+      const cart = await cartAPI.getCart();
+      console.log("Auth Cart", cart);
+      return cart;
+      // const response = await fetch("/api/cart", {
+      //   headers: {
+      //     Authorization: `Bearer ${localStorage.getItem("token")}`,
+      //   },
+      // });
 
-      if (!response.ok) {
-        throw new Error("Failed to fetch cart");
-      }
-
-      return await response.json();
+      // if (!response.ok) {
+      //   throw new Error("Failed to fetch cart");
+      // }
+      // return await response.json();
     } catch (error) {
       console.error("Error fetching cart:", error);
       return { cart: [] };
