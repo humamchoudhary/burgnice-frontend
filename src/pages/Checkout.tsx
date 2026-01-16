@@ -8,18 +8,11 @@ import { orderAPI, checkoutAPI } from "@/services/api";
 const UPLOAD_BASE_URL =
   import.meta.env.VITE_SERVER_BASE_URL || "http://localhost:5000";
 
-type CartItem = {
-  id: string;
-  name: string;
-  price: number;
-  quantity: number;
-  image: string;
-};
-
 export const Checkout = () => {
   const navigate = useNavigate();
-  const { user, isAuthenticated } = useAuth();
-  const [items, setItems] = useState<CartItem[]>([]);
+  const { user, isAuthenticated, cart, cartTotal, cartCount, clearCart } =
+    useAuth();
+
   const [useLoyaltyPoints, setUseLoyaltyPoints] = useState(false);
   const [discountAmount, setDiscountAmount] = useState(0);
   const [pointsUsed, setPointsUsed] = useState(0);
@@ -34,7 +27,7 @@ export const Checkout = () => {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    const stored = sessionStorage.getItem("cart");
+    // Use cart from auth context instead of sessionStorage
     const checkoutData = sessionStorage.getItem("checkoutData");
     const savedOrderType = sessionStorage.getItem("orderType") as
       | "delivery"
@@ -42,20 +35,6 @@ export const Checkout = () => {
 
     if (savedOrderType) {
       setOrderType(savedOrderType);
-    }
-
-    if (stored) {
-      const cartItems = JSON.parse(stored);
-      const aggregated: Record<string, CartItem> = {};
-      cartItems.forEach((item: any) => {
-        if (!item) return;
-        if (aggregated[item.id]) {
-          aggregated[item.id].quantity += 1;
-        } else {
-          aggregated[item.id] = { ...item, quantity: 1 };
-        }
-      });
-      setItems(Object.values(aggregated));
     }
 
     if (checkoutData) {
@@ -68,7 +47,7 @@ export const Checkout = () => {
     if (user) {
       setForm((prev) => ({
         ...prev,
-        customerName: user.username,
+        customerName: user.username || user.name || "",
       }));
     }
 
@@ -89,10 +68,12 @@ export const Checkout = () => {
     };
   }, [user]);
 
-  const subtotal = items.reduce(
-    (sum, item) => sum + item.price * item.quantity,
+  // Calculate subtotal from cart items in auth context
+  const subtotal = cart.reduce(
+    (sum, item) => sum + item.menuItem.price * item.quantity,
     0,
   );
+
   const pointsEarned = Math.floor(subtotal / 10);
   const total = Math.max(0, subtotal - discountAmount);
 
@@ -112,7 +93,7 @@ export const Checkout = () => {
       return;
     }
 
-    if (items.length === 0) {
+    if (cart.length === 0) {
       toast.error("Your cart is empty.");
       return;
     }
@@ -122,8 +103,8 @@ export const Checkout = () => {
     try {
       // CARD PAYMENT - Redirect to Stripe
       if (form.paymentMethod === "CARD") {
-        const prods = items.map((item) => ({
-          id: item.id,
+        const prods = cart.map((item) => ({
+          id: item.menuItem._id,
           quantity: item.quantity,
         }));
 
@@ -149,10 +130,11 @@ export const Checkout = () => {
       }
 
       // COD PAYMENT - Create order directly
-      const orderItems = items.map((item) => ({
-        menuItem: item.id,
+      const orderItems = cart.map((item) => ({
+        menuItem: item.menuItem._id,
         quantity: item.quantity,
-        price: item.price,
+        price: item.menuItem.price,
+        customizations: item.customizations,
       }));
 
       const payload = {
@@ -189,7 +171,9 @@ export const Checkout = () => {
         }
       }
 
-      sessionStorage.removeItem("cart");
+      // Clear cart after successful order
+      await clearCart();
+
       sessionStorage.removeItem("checkoutData");
       window.dispatchEvent(new Event("cart-updated"));
 
@@ -383,35 +367,73 @@ export const Checkout = () => {
                 <h2 className="text-xl font-bold text-gray-900 dark:text-white">
                   Order Summary
                 </h2>
+                {cartCount > 0 && (
+                  <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                    {cartCount} {cartCount === 1 ? "item" : "items"}
+                  </p>
+                )}
               </div>
               <div className="p-6 pt-0">
                 <div className="space-y-4">
                   <div className="space-y-3 max-h-64 overflow-y-auto pr-2">
-                    {items.map((item) => (
-                      <div
-                        key={item.id}
-                        className="flex items-center justify-between"
-                      >
-                        <div className="flex items-center gap-3">
-                          <img
-                            src={`${UPLOAD_BASE_URL}${item.image}`}
-                            alt={item.name}
-                            className="w-12 h-12 object-cover rounded-lg"
-                          />
-                          <div>
-                            <p className="font-medium text-gray-900 dark:text-white">
-                              {item.name}
-                            </p>
-                            <p className="text-sm text-gray-500 dark:text-gray-400">
-                              £{item.price.toFixed(2)} × {item.quantity}
-                            </p>
-                          </div>
-                        </div>
-                        <p className="font-semibold text-gray-900 dark:text-white">
-                          £{(item.price * item.quantity).toFixed(2)}
+                    {cart.length === 0 ? (
+                      <div className="text-center py-8">
+                        <p className="text-gray-500 dark:text-gray-400">
+                          Your cart is empty
                         </p>
+                        <button
+                          onClick={() => navigate("/menu")}
+                          className="mt-4 px-4 py-2 text-sm rounded-lg border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800"
+                        >
+                          Browse Menu
+                        </button>
                       </div>
-                    ))}
+                    ) : (
+                      cart.map((item) => (
+                        <div
+                          key={item.id}
+                          className="flex items-center justify-between"
+                        >
+                          <div className="flex items-center gap-3">
+                            <img
+                              src={
+                                item.menuItem.image
+                                  ? `${UPLOAD_BASE_URL}${item.menuItem.image}`
+                                  : "/placeholder-food.jpg"
+                              }
+                              alt={item.menuItem.name}
+                              className="w-12 h-12 object-cover rounded-lg"
+                            />
+                            <div>
+                              <p className="font-medium text-gray-900 dark:text-white">
+                                {item.menuItem.name}
+                              </p>
+                              <p className="text-sm text-gray-500 dark:text-gray-400">
+                                £{item.menuItem.price.toFixed(2)} ×{" "}
+                                {item.quantity}
+                              </p>
+                              {Object.keys(item.customizations).length > 0 && (
+                                <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                  {Object.entries(item.customizations).map(
+                                    ([key, value]) => (
+                                      <div
+                                        key={key}
+                                        className="truncate max-w-[120px]"
+                                      >
+                                        {key}: {value}
+                                      </div>
+                                    ),
+                                  )}
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                          <p className="font-semibold text-gray-900 dark:text-white">
+                            £{item.total.toFixed(2)}
+                          </p>
+                        </div>
+                      ))
+                    )}
                   </div>
 
                   <div className="h-px bg-gray-200 dark:bg-gray-800" />
@@ -460,7 +482,7 @@ export const Checkout = () => {
                   <div className="space-y-2">
                     <div className="flex justify-between">
                       <span className="text-gray-500 dark:text-gray-400">
-                        Subtotal
+                        Subtotal ({cartCount} items)
                       </span>
                       <span className="text-gray-900 dark:text-white">
                         £{subtotal.toFixed(2)}
@@ -487,7 +509,7 @@ export const Checkout = () => {
 
                   <button
                     onClick={placeOrder}
-                    disabled={loading}
+                    disabled={loading || cart.length === 0}
                     className="w-full px-6 py-4 text-lg font-medium rounded-lg bg-primary text-white hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl transition-all duration-300 mt-4"
                   >
                     {loading ? (
@@ -495,6 +517,8 @@ export const Checkout = () => {
                         <Loader2 className="mr-2 h-5 w-5 animate-spin" />
                         Processing Order...
                       </span>
+                    ) : cart.length === 0 ? (
+                      "Cart is Empty"
                     ) : (
                       `Place Order - £${total.toFixed(2)}`
                     )}

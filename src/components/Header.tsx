@@ -9,14 +9,13 @@ import logo from "@/assets/logo.png";
 
 export const Header = ({ onCartClick }: { onCartClick: () => void }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [cartItemCount, setCartItemCount] = useState(0);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [orderType, setOrderType] = useState<"delivery" | "pickup">("delivery");
   const [isScrolled, setIsScrolled] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
-  const { isAuthenticated, user, logout } = useAuth();
+  const { isAuthenticated, user, logout, cartCount } = useAuth();
 
   const navItems = [
     { name: "Home", path: "/" },
@@ -27,19 +26,6 @@ export const Header = ({ onCartClick }: { onCartClick: () => void }) => {
   const isActive = (path: string) => location.pathname === path;
 
   // Calculate cart count from session storage
-  const updateCartCount = () => {
-    const cart = sessionStorage.getItem("cart");
-    if (!cart) {
-      setCartItemCount(0);
-      return;
-    }
-    const items = JSON.parse(cart);
-    const total = items.reduce((sum: number, item: any) => {
-      if (!item) return sum;
-      return sum + (item.quantity ?? 1);
-    }, 0);
-    setCartItemCount(total);
-  };
 
   // Handle search
   const handleSearch = (e: React.FormEvent) => {
@@ -62,25 +48,6 @@ export const Header = ({ onCartClick }: { onCartClick: () => void }) => {
   };
 
   // Initialize and listen for changes
-  useEffect(() => {
-    window.addEventListener("cart-updated", updateCartCount);
-    updateCartCount();
-
-    const handleStorage = () => updateCartCount();
-    window.addEventListener("storage", handleStorage);
-
-    const savedOrderType = sessionStorage.getItem("orderType") as
-      | "delivery"
-      | "pickup";
-    if (savedOrderType) {
-      setOrderType(savedOrderType);
-    }
-
-    return () => {
-      window.removeEventListener("cart-updated", updateCartCount);
-      window.removeEventListener("storage", handleStorage);
-    };
-  }, []);
 
   return (
     <header
@@ -156,9 +123,9 @@ export const Header = ({ onCartClick }: { onCartClick: () => void }) => {
             className="relative p-2.5 rounded-full bg-white text-[#A63872] hover:bg-gray-100 transition-all duration-300 hover:scale-110 hover:shadow-lg group"
           >
             <ShoppingCart className="h-5 w-5 transition-transform group-hover:rotate-12" />
-            {cartItemCount > 0 && (
-              <span className="absolute -top-2 -right-2 h-6 w-6 flex items-center justify-center p-0 text-xs animate-bounce bg-red-500 text-white rounded-full text-xs font-bold">
-                {cartItemCount > 99 ? "99+" : cartItemCount}
+            {cartCount > 0 && (
+              <span className="absolute -top-2 -right-2 h-6 w-6 flex items-center justify-center text-xs animate-bounce bg-red-500 text-white rounded-full font-bold">
+                {cartCount > 99 ? "99+" : cartCount}
               </span>
             )}
           </button>

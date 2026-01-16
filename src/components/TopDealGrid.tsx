@@ -1,3 +1,4 @@
+import { useAuth } from "@/contexts/authContext";
 import { menuItemAPI, MenuItem } from "@/services/api";
 import { useState, useEffect } from "react";
 // Remove the hardcoded deals array and interface
@@ -11,7 +12,7 @@ type LayoutContext = {
 };
 
 export default function TopDealsGrid() {
-  const { onAddToCart } = useOutletContext<LayoutContext>();
+  const { addToCart } = useAuth();
   const [deals, setDeals] = useState<MenuItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [favorites, setFavorites] = useState<Set<string>>(new Set());
@@ -24,6 +25,7 @@ export default function TopDealsGrid() {
     try {
       setLoading(true);
       const topDeals = await menuItemAPI.getTopDeals(4); // Get top 4 deals
+      console.log(topDeals);
       setDeals(topDeals);
     } catch (error) {
       console.error("Error fetching top deals:", error);
@@ -45,21 +47,21 @@ export default function TopDealsGrid() {
   };
 
   const handleAddToCart = (item: MenuItem) => {
-    const existingCart = sessionStorage.getItem("cart");
-    const cartItems: (MenuItem & { quantity: number })[] = existingCart
-      ? JSON.parse(existingCart)
-      : [];
-    const existing = cartItems.find((i) => i.id === item.id);
-    if (existing) {
-      existing.quantity += 1;
-    } else {
-      cartItems.push({ ...item, quantity: 1 });
-    }
-    sessionStorage.setItem("cart", JSON.stringify(cartItems));
-    window.dispatchEvent(new Event("cart-updated"));
-    if (onAddToCart) {
-      onAddToCart(item);
-    }
+    console.log("Menu Item", item);
+    const cartItem = {
+      id: item.id, // temp client id
+      menuItem: {
+        _id: item._id,
+        name: item.name,
+        price: item.price,
+        image: item.image,
+      },
+      quantity: 1,
+      customizations: {},
+      addedAt: new Date().toISOString(),
+      total: item.price,
+    };
+    addToCart(cartItem);
   };
 
   if (loading) {

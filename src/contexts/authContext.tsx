@@ -14,7 +14,7 @@ interface User {
   email: string;
   role: string;
   loyaltyPoints: number;
-  name?: string; // Add optional name field
+  name?: string;
 }
 
 interface CartItem {
@@ -47,6 +47,11 @@ interface AuthContextType {
   syncCartAfterLogin: () => Promise<void>;
   fetchCart: () => Promise<void>;
   loading: boolean;
+
+  addToCart: (item: CartItem) => void;
+  updateCartItem: (id: string, qty: number) => void;
+  removeFromCart: (id: string) => void;
+  clearCart: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -70,23 +75,31 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [cartTotal, setCartTotal] = useState(0);
   const [loading, setLoading] = useState(true);
 
+  // Calculate cart metrics whenever cart changes
+  useEffect(() => {
+    const count = cart.reduce((sum, item) => sum + item.quantity, 0);
+    const total = cart.reduce((sum, item) => sum + item.total, 0);
+
+    setCartCount(count);
+    setCartTotal(total);
+  }, [cart]);
+
   // Calculate cart metrics
   const calculateCartMetrics = (cartItems: CartItem[]) => {
-    const count = cartItems.reduce((sum, item) => sum + item.quantity, 0);
+    const count = cartItems.reduce((sum, item) => {
+      return sum + item.quantity;
+    }, 0);
     const total = cartItems.reduce((sum, item) => sum + item.total, 0);
     return { count, total };
   };
 
   // Fetch user cart from backend
   const fetchCart = async () => {
-    try {
-      if (!user) return;
+    if (!user) return;
 
-      const response = await fetchCartFromBackend();
-      setCart(response.cart || []);
-      const { count, total } = calculateCartMetrics(response.cart || []);
-      setCartCount(count);
-      setCartTotal(total);
+    try {
+      const response = await cartAPI.getCart();
+      setCart(response);
     } catch (error) {
       console.error("Failed to fetch cart:", error);
     }
@@ -107,83 +120,157 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   // Sync guest cart to backend after login
   const syncCartAfterLogin = async () => {
+    const guestCart = getGuestCart();
+
     try {
-      const guestCart = getGuestCart();
-      if (guestCart.length === 0) return;
-
-      // Convert guest cart format to backend format
-      const cartItems = guestCart.map((item: any) => ({
-        menuItemId: item.id,
-        quantity: item.quantity,
-        customizations: item.customizations || {},
-        addedAt: item.addedAt || new Date().toISOString(),
-      }));
-
-      // Call backend sync endpoint
-      const response = await cartAPI.syncCart(cartItems);
-
-      if (response && response.cart) {
-        setCart(response.cart);
-        const { count, total } = calculateCartMetrics(response.cart);
-        setCartCount(count);
-        setCartTotal(total);
+      if (guestCart.length === 0) {
+        await fetchCart();
+        return;
       }
 
-      // Clear guest cart
-      sessionStorage.removeItem("cart");
-      window.dispatchEvent(new Event("cart-updated"));
+      const response = await cartAPI.syncCart(
+        guestCart.map((item) => ({
+          menuItemId: item.menuItem._id,
+          quantity: item.quantity,
+          customizations: item.customizations,
+        })),
+      );
 
-      toast.success(`Synced ${guestCart.length} items from guest cart!`);
+      setCart(response.cart);
+      sessionStorage.removeItem("cart");
     } catch (error) {
-      console.error("Error syncing cart after login:", error);
-      toast.error("Failed to sync cart items");
+      console.error("Failed to sync cart:", error);
     }
   };
 
-  useEffect(() => {
-    checkAuth();
-  }, []);
+  const persistCart = async (updatedCart: CartItem[]) => {
+    setCart(updatedCart);
 
-  const checkAuth = async () => {
-    const token = localStorage.getItem("token");
-    const storedUser = localStorage.getItem("user");
+    if (user) {
+      // Persist to backend
+      await cartAPI.syncCart(
+        updatedCart.map((item) => ({
+          menuItemId: item.menuItem._id,
+          quantity: item.quantity,
+          customizations: item.customizations,
+        })),
+      );
+    } else {
+      // Persist to sessionStorage
+      sessionStorage.setItem("cart", JSON.stringify(updatedCart));
+    }
+  };
 
-    if (token && storedUser) {
-      try {
-        setAuthToken(token);
-        // Parse the stored user (it might be nested or flat)
-        const parsedUser = JSON.parse(storedUser);
-        // Handle both nested (user.user) and flat (user) structures
-        const userObj = parsedUser.user || parsedUser;
-        setUser(userObj);
+  const addToCart = async (newItem: CartItem) => {
+    if (user) {
+      console.log("Add to cart:", newItem);
+      const resp = await cartAPI.addToCart(
+        newItem.menuItem._id,
+        newItem.quantity,
+      );
+      setCart(resp.cart);
+    } else {
+      const existingItem = cart.find(
+        (item) =>
+          item.menuItem._id === newItem.menuItem._id &&
+          JSON.stringify(item.customizations) ===
+            JSON.stringify(newItem.customizations),
+      );
 
-        // Fetch user profile and cart
-        await fetchProfileAndCart();
-      } catch (error) {
-        console.error("Error parsing stored user:", error);
-        logout();
-        setLoading(false);
+      let updatedCart: CartItem[];
+
+      if (existingItem) {
+        updatedCart = cart.map((item) =>
+          item === existingItem
+            ? { ...item, quantity: item.quantity + newItem.quantity }
+            : item,
+        );
+      } else {
+        updatedCart = [...cart, newItem];
+      }
+      console.log("Updated Cart", updatedCart);
+      await persistCart(updatedCart);
+    }
+  };
+
+  const updateCartItem = async (id: string, qty: number) => {
+    if (user) {
+      if (qty <= 0) {
+        await removeFromCart(id);
+        return;
+      } else {
+        const resp = await cartAPI.updateCartItem(id, qty);
+        setCart(resp.cart);
       }
     } else {
-      setLoading(false);
+      const updatedCart = cart.map((item) =>
+        item.id === id ? { ...item, quantity: qty } : item,
+      );
+      await persistCart(updatedCart);
     }
   };
+
+  const removeFromCart = async (id: string) => {
+    if (user) {
+      const resp = await cartAPI.removeFromCart(id);
+      console.log(resp);
+      setCart(resp.cart);
+    } else {
+      const updatedCart = cart.filter((item) => item.id !== id);
+      await persistCart(updatedCart);
+    }
+  };
+
+  const clearCart = async () => {
+    setCart([]);
+
+    if (user) {
+      await cartAPI.clearCart();
+    } else {
+      sessionStorage.removeItem("cart");
+    }
+  };
+
+  // Initialize auth and cart
+  useEffect(() => {
+    const init = async () => {
+      const token = localStorage.getItem("token");
+      const storedUser = localStorage.getItem("user");
+
+      // Step 1: Hydrate cart immediately from sessionStorage (guest cart)
+      const guestCart = getGuestCart();
+      setCart(guestCart);
+
+      if (token && storedUser) {
+        setAuthToken(token);
+        setUser(JSON.parse(storedUser));
+
+        // Step 2: Fetch backend cart and overwrite guest cart
+        try {
+          const backendCart = await cartAPI.getCart();
+          setCart(backendCart);
+        } catch (error) {
+          console.error("Failed to fetch cart on init:", error);
+        }
+      }
+
+      setLoading(false);
+    };
+
+    init();
+  }, []);
 
   const fetchProfileAndCart = async () => {
     try {
-      // Fetch user profile
       const profileData = await authAPI.getProfile();
-
-      // Handle both nested and flat response structures
       const userObj = profileData.user || profileData;
+
       if (!userObj || !userObj.id) {
         throw new Error("Invalid user data received");
       }
 
       setUser(userObj);
       localStorage.setItem("user", JSON.stringify(userObj));
-
-      // Fetch cart separately since authAPI doesn't return cart
       await fetchCart();
     } catch (error) {
       console.error("Failed to fetch profile/cart:", error);
@@ -193,22 +280,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
-  // Helper to fetch cart from backend
   const fetchCartFromBackend = async () => {
     try {
       const cart = await cartAPI.getCart();
       console.log("Auth Cart", cart);
       return cart;
-      // const response = await fetch("/api/cart", {
-      //   headers: {
-      //     Authorization: `Bearer ${localStorage.getItem("token")}`,
-      //   },
-      // });
-
-      // if (!response.ok) {
-      //   throw new Error("Failed to fetch cart");
-      // }
-      // return await response.json();
     } catch (error) {
       console.error("Error fetching cart:", error);
       return { cart: [] };
@@ -220,7 +296,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       setLoading(true);
       const response = await authAPI.login(email, password);
 
-      // Handle both nested and flat response structures
       const userObj = response.user || response;
       const token = response.token;
 
@@ -228,19 +303,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         throw new Error("Invalid login response");
       }
 
-      // Store token and user
       localStorage.setItem("token", token);
       localStorage.setItem("user", JSON.stringify(userObj));
-
-      // Set auth token globally
       setAuthToken(token);
-
-      // Set user state
       setUser(userObj);
 
       toast.success("Login successful!");
-
-      // Sync guest cart after successful login
       await syncCartAfterLogin();
     } catch (error: any) {
       const errorMessage =
@@ -265,7 +333,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         password,
       });
 
-      // Handle both nested and flat response structures
       const userObj = response.user || response;
       const token = response.token;
 
@@ -273,19 +340,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         throw new Error("Invalid registration response");
       }
 
-      // Store token and user
       localStorage.setItem("token", token);
       localStorage.setItem("user", JSON.stringify(userObj));
-
-      // Set auth token globally
       setAuthToken(token);
-
-      // Set user state
       setUser(userObj);
 
       toast.success("Registration successful!");
-
-      // Sync guest cart after successful registration
       await syncCartAfterLogin();
     } catch (error: any) {
       const errorMessage =
@@ -303,29 +363,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     sessionStorage.removeItem("cart");
     setUser(null);
     setCart([]);
-    setCartCount(0);
-    setCartTotal(0);
     toast.success("Logged out successfully");
   };
-
-  // Listen for cart updates from other components
-  useEffect(() => {
-    const handleCartUpdate = () => {
-      if (user) {
-        fetchCart();
-      } else {
-        // For guest users, update from sessionStorage
-        const guestCart = getGuestCart();
-        setCart(guestCart);
-        const { count, total } = calculateCartMetrics(guestCart);
-        setCartCount(count);
-        setCartTotal(total);
-      }
-    };
-
-    window.addEventListener("cart-updated", handleCartUpdate);
-    return () => window.removeEventListener("cart-updated", handleCartUpdate);
-  }, [user]);
 
   return (
     <AuthContext.Provider
@@ -341,6 +380,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         syncCartAfterLogin,
         fetchCart,
         loading,
+        addToCart,
+        updateCartItem,
+        removeFromCart,
+        clearCart,
       }}
     >
       {children}

@@ -292,6 +292,7 @@ export const menuItemAPI = {
     const response = await api.get("/menu-items", {
       params: { isTopDeal: true, limit },
     });
+    console.log("top deals", response);
     return response.data;
   },
 
@@ -687,6 +688,7 @@ export const checkoutAPI = {
 export const cartAPI = {
   // Sync cart from guest to logged-in user
   syncCart: async (cartItems: any[]): Promise<any> => {
+    console.log("SYNC CALLED");
     const response = await api.post("/cart/sync", { cartItems });
     return response.data;
   },

@@ -1,14 +1,10 @@
 import { useEffect, useState } from "react";
 import { X, Minus, Plus, ShoppingBag, Award, Sparkles } from "lucide-react";
-import { MenuItem } from "@/services/api";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/authContext";
+
 const UPLOAD_BASE_URL =
   import.meta.env.VITE_SERVER_BASE_URL || "http://localhost:5000";
-
-export interface CartItem extends MenuItem {
-  quantity: number;
-}
 
 interface CartProps {
   isOpen: boolean;
@@ -22,89 +18,34 @@ const calculateLoyaltyPoints = (total: number) => {
 
 export const Cart = ({ isOpen, onClose }: CartProps) => {
   const navigate = useNavigate();
-  const { isAuthenticated, user } = useAuth();
-  const [items, setItems] = useState<CartItem[]>([]);
+  const {
+    isAuthenticated,
+    user,
+    cart,
+    cartTotal,
+    cartCount,
+    updateCartItem,
+    removeFromCart,
+    clearCart,
+  } = useAuth();
+
   const [loading, setLoading] = useState(false);
 
-  // Load cart from session storage whenever the cart opens
-  useEffect(() => {
-    if (isOpen) {
-      loadCartItems();
-    }
-  }, [isOpen]);
-
-  const loadCartItems = () => {
-    const storedCart = sessionStorage.getItem("cart");
-    const cartItems: CartItem[] = storedCart ? JSON.parse(storedCart) : [];
-
-    const aggregatedMap = new Map<string, CartItem>();
-
-    cartItems.forEach((item) => {
-      if (!item?.name) return;
-
-      const existing = aggregatedMap.get(item.name);
-
-      if (existing) {
-        existing.quantity += item.quantity ?? 1;
-      } else {
-        aggregatedMap.set(item.name, {
-          ...item,
-          quantity: item.quantity ?? 1,
-        });
-      }
-    });
-
-    setItems(Array.from(aggregatedMap.values()));
+  const handleUpdateQuantity = async (id: string, quantity: number) => {
+    await updateCartItem(id, quantity);
   };
 
-  const updateQuantity = (id: string, quantity: number) => {
-    const updatedItems = items
-      .map((item) => (item.id === id ? { ...item, quantity } : item))
-      .filter((i) => i.quantity > 0); // remove if 0
-
-    setItems(updatedItems);
-    updateSessionStorage(updatedItems);
+  const handleRemoveItem = async (id: string) => {
+    await removeFromCart(id);
   };
 
-  const removeItem = (id: string) => {
-    const updatedItems = items.filter((item) => item.id !== id);
-    setItems(updatedItems);
-    updateSessionStorage(updatedItems);
+  const handleClearCart = async () => {
+    await clearCart();
   };
 
-  const updateSessionStorage = (items: CartItem[]) => {
-    // Flatten items array with quantities
-    const flattened = items.flatMap((item) =>
-      Array(item.quantity).fill({
-        id: item.id,
-        name: item.name,
-        description: item.description,
-        price: item.price,
-        image: item.image,
-        categories: item.categories,
-      }),
-    );
-
-    sessionStorage.setItem("cart", JSON.stringify(flattened));
-    window.dispatchEvent(new Event("cart-updated"));
-  };
-
-  const clearCart = () => {
-    setItems([]);
-    sessionStorage.removeItem("cart");
-    window.dispatchEvent(new Event("cart-updated"));
-  };
-
-  const total = items.reduce(
-    (sum, item) => sum + item.price * item.quantity,
-    0,
-  );
-  const itemCount = items.reduce((sum, item) => sum + item.quantity, 0);
-  const pointsEarned = calculateLoyaltyPoints(total);
+  const pointsEarned = calculateLoyaltyPoints(cartTotal);
 
   const goToCheckout = () => {
-    // Save current cart items to session storage as-is
-    updateSessionStorage(items);
     navigate("/checkout");
     onClose();
   };
@@ -117,9 +58,9 @@ export const Cart = ({ isOpen, onClose }: CartProps) => {
   };
 
   const savings = calculateSavingsWithPoints();
-  const finalTotal = Math.max(0, total - savings);
+  const finalTotal = Math.max(0, cartTotal - savings);
 
-  // Close cart when clicking outside (backdrop)
+  // Close cart when clicking outside (backdrop) or pressing Escape
   useEffect(() => {
     if (!isOpen) return;
 
@@ -156,9 +97,9 @@ export const Cart = ({ isOpen, onClose }: CartProps) => {
                     Your Cart
                   </h2>
                 </div>
-                {itemCount > 0 && (
+                {cartCount > 0 && (
                   <span className="h-6 px-2 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-full text-sm font-medium">
-                    {itemCount} {itemCount === 1 ? "item" : "items"}
+                    {cartCount} {cartCount === 1 ? "item" : "items"}
                   </span>
                 )}
                 <button
@@ -170,7 +111,7 @@ export const Cart = ({ isOpen, onClose }: CartProps) => {
               </div>
             </div>
 
-            {items.length === 0 ? (
+            {cart.length === 0 ? (
               <div className="flex-1 flex flex-col items-center justify-center text-center p-8">
                 <div className="relative mb-6">
                   <ShoppingBag className="h-20 w-20 text-gray-400 opacity-30" />
@@ -201,15 +142,19 @@ export const Cart = ({ isOpen, onClose }: CartProps) => {
               <>
                 {/* Cart Items List */}
                 <div className="flex-1 overflow-y-auto py-4 px-6 space-y-4">
-                  {items.map((item) => (
+                  {cart.map((item) => (
                     <div
                       key={item.id}
                       className="flex gap-4 p-4 bg-gray-50 dark:bg-gray-800/50 rounded-xl border border-gray-200 dark:border-gray-800 transition-all duration-300 hover:border-primary/30"
                     >
                       <div className="relative">
                         <img
-                          src={`${UPLOAD_BASE_URL}${item.image}`}
-                          alt={item.name}
+                          src={
+                            item.menuItem.image
+                              ? `${UPLOAD_BASE_URL}${item.menuItem.image}`
+                              : "/placeholder-food.jpg"
+                          }
+                          alt={item.menuItem.name}
                           className="w-20 h-20 object-cover rounded-lg"
                         />
                         {item.quantity > 1 && (
@@ -223,15 +168,24 @@ export const Cart = ({ isOpen, onClose }: CartProps) => {
                         <div className="flex justify-between items-start">
                           <div>
                             <h4 className="font-semibold text-gray-900 dark:text-white truncate">
-                              {item.name}
+                              {item.menuItem.name}
                             </h4>
-                            <p className="text-xs text-gray-600 dark:text-gray-400 mt-1 line-clamp-2">
-                              {item.description}
-                            </p>
+                            {/* Display customizations if any */}
+                            {Object.keys(item.customizations).length > 0 && (
+                              <div className="text-xs text-gray-600 dark:text-gray-400 mt-1">
+                                {Object.entries(item.customizations).map(
+                                  ([key, value]) => (
+                                    <div key={key}>
+                                      {key}: {value}
+                                    </div>
+                                  ),
+                                )}
+                              </div>
+                            )}
                           </div>
                           <button
                             className="h-8 w-8 rounded-lg text-gray-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 flex items-center justify-center"
-                            onClick={() => removeItem(item.id)}
+                            onClick={() => handleRemoveItem(item.id)}
                           >
                             <X className="h-4 w-4" />
                           </button>
@@ -239,9 +193,9 @@ export const Cart = ({ isOpen, onClose }: CartProps) => {
 
                         <div className="flex flex-col items-end md:flex-row md:items-center justify-between mt-3">
                           <p className="text-sm font-bold text-primary">
-                            £{(item.price * item.quantity).toFixed(2)}
+                            £{item.total.toFixed(2)}
                             <span className="text-xs text-gray-600 dark:text-gray-400 font-normal ml-1">
-                              (£{item.price.toFixed(2)} each)
+                              (£{item.menuItem.price.toFixed(2)} each)
                             </span>
                           </p>
 
@@ -249,7 +203,7 @@ export const Cart = ({ isOpen, onClose }: CartProps) => {
                             <button
                               className="h-6 w-6 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                               onClick={() =>
-                                updateQuantity(
+                                handleUpdateQuantity(
                                   item.id,
                                   Math.max(1, item.quantity - 1),
                                 )
@@ -264,7 +218,7 @@ export const Cart = ({ isOpen, onClose }: CartProps) => {
                             <button
                               className="h-6 w-6 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 flex items-center justify-center transition-colors"
                               onClick={() =>
-                                updateQuantity(item.id, item.quantity + 1)
+                                handleUpdateQuantity(item.id, item.quantity + 1)
                               }
                             >
                               <Plus className="h-2.5 w-2.5" />
@@ -361,10 +315,10 @@ export const Cart = ({ isOpen, onClose }: CartProps) => {
                     <div className="space-y-2">
                       <div className="flex justify-between text-sm">
                         <span className="text-gray-600 dark:text-gray-400">
-                          Subtotal ({itemCount} items)
+                          Subtotal ({cartCount} items)
                         </span>
                         <span className="font-medium text-gray-900 dark:text-white">
-                          £{total.toFixed(2)}
+                          £{cartTotal.toFixed(2)}
                         </span>
                       </div>
 
@@ -401,7 +355,7 @@ export const Cart = ({ isOpen, onClose }: CartProps) => {
                       <div className="text-right">
                         {savings > 0 && (
                           <p className="text-sm text-gray-600 line-through mb-1">
-                            £{total.toFixed(2)}
+                            £{cartTotal.toFixed(2)}
                           </p>
                         )}
                         <p className="text-2xl font-bold text-primary">
@@ -423,9 +377,7 @@ export const Cart = ({ isOpen, onClose }: CartProps) => {
                     <div className="flex gap-3">
                       <button
                         className="flex-1 px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800"
-                        onClick={() => {
-                          clearCart();
-                        }}
+                        onClick={handleClearCart}
                       >
                         Clear Cart
                       </button>

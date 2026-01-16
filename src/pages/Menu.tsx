@@ -11,12 +11,14 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { ItemDetailsModal } from "@/components/ItemDetailsModal";
+import { useAuth } from "@/contexts/authContext";
 
 interface MenuProps {
   onAddToCart: (item: MenuItem) => void;
 }
 
 export const Menu = ({ onAddToCart }: MenuProps) => {
+  const { addToCart } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
   const [activeTab, setActiveTab] = useState<string>("all");
   const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
@@ -56,6 +58,7 @@ export const Menu = ({ onAddToCart }: MenuProps) => {
           name: cat.name,
           slug: cat.name.toLowerCase().replace(/\s+/g, ""),
         }));
+        console.log(menuData);
 
         const convertedItems = menuData.map((item) => {
           let categoriesArray: string[] = [];
@@ -73,7 +76,7 @@ export const Menu = ({ onAddToCart }: MenuProps) => {
           }
 
           return {
-            id: item.id,
+            id: item._id,
             name: item.name,
             description: item.description,
             price: item.price,
@@ -118,22 +121,22 @@ export const Menu = ({ onAddToCart }: MenuProps) => {
   };
 
   const handleAddToCart = (item: MenuItem) => {
-    const existingCart = sessionStorage.getItem("cart");
-    const cartItems: (MenuItem & { quantity: number })[] = existingCart
-      ? JSON.parse(existingCart)
-      : [];
-    const existing = cartItems.find((i) => i.id === item.id);
-    if (existing) {
-      existing.quantity += 1;
-    } else {
-      cartItems.push({ ...item, quantity: 1 });
-    }
-    sessionStorage.setItem("cart", JSON.stringify(cartItems));
-    window.dispatchEvent(new Event("cart-updated"));
-
-    onAddToCart(item);
+    console.log("Menu Item", item);
+    const cartItem = {
+      id: item.id, // temp client id
+      menuItem: {
+        _id: item.id,
+        name: item.name,
+        price: item.price,
+        image: item.image,
+      },
+      quantity: 1,
+      customizations: {},
+      addedAt: new Date().toISOString(),
+      total: item.price,
+    };
+    addToCart(cartItem);
   };
-
   // Filter items based on active tab, search query, and price filter
   const filteredItems = menuItems.filter((item) => {
     const categoryMatch =
