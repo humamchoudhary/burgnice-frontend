@@ -24,8 +24,9 @@ FROM nginx:alpine AS production
 
 # Copy built assets from build stage
 # For CRA (default):
-COPY --from=build /app/build /usr/share/nginx/html
+# COPY --from=build /app/build /usr/share/nginx/html
 
+COPY --from=build /app/dist /usr/share/nginx/html
 # For Vite, replace above line with:
 # COPY --from=build /app/dist /usr/share/nginx/html
 
